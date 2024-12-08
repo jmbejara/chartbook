@@ -1,0 +1,8 @@
+{
+    "EX":{
+        "import_from": "../to_be_published/EX"
+    },
+    "COIN":{
+        "import_from": "../to_be_published/COIN"
+    }
+}
