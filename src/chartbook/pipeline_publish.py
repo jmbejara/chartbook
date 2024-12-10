@@ -607,9 +607,7 @@ def _get(base_dir=BASE_DIR, dep_or_target="dep"):
 
 
 def get_file_deps(base_dir=BASE_DIR):
-    file_deps = _get(
-        base_dir=base_dir, dep_or_target="dep"
-    )
+    file_deps = _get(base_dir=base_dir, dep_or_target="dep")
     return file_deps
 
 
@@ -682,29 +680,29 @@ def get_most_recent_pipeline_source_modification(
     return latest
 
 
-def _demo():
-    specs = read_specs(base_dir=BASE_DIR)
-    len(specs["charts"])
-    len(specs["dataframes"])
+# def _demo():
+#     specs = read_specs(base_dir=BASE_DIR)
+#     len(specs["charts"])
+#     len(specs["dataframes"])
 
-    # Used for dodo.py
-    file_deps = get_file_deps(base_dir=BASE_DIR)
-    targets = get_targets(base_dir=BASE_DIR)
+#     # Used for dodo.py
+#     file_deps = get_file_deps(base_dir=BASE_DIR)
+#     targets = get_targets(base_dir=BASE_DIR)
 
-    # Used for injection into index.md
-    table_file_map = get_dataframes_and_dataframe_docs(base_dir=BASE_DIR)
+#     # Used for injection into index.md
+#     table_file_map = get_dataframes_and_dataframe_docs(base_dir=BASE_DIR)
 
-    # Used for moving files into download folder. Dict shows where files will be copied from and to
-    dataset_plan, chart_plan_download, chart_plan_static = (
-        get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_DIR)
-    )
-    publish_plan = dataset_plan | chart_plan_download
-    list(publish_plan.keys())
-    list(publish_plan.values())
+#     # Used for moving files into download folder. Dict shows where files will be copied from and to
+#     dataset_plan, chart_plan_download, chart_plan_static = (
+#         get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_DIR)
+#     )
+#     publish_plan = dataset_plan | chart_plan_download
+#     list(publish_plan.keys())
+#     list(publish_plan.values())
 
-    # Find date modified
-    dt_modified = get_last_modified_datetime("mydata.parquet")
-    print(f"Last modified: {dt_modified}")
+#     # Find date modified
+#     dt_modified = get_last_modified_datetime("mydata.parquet")
+#     print(f"Last modified: {dt_modified}")
 
 
 def get_pipeline_publishing_plan(specs, publish_dir=PUBLISH_DIR):
@@ -923,7 +921,7 @@ def main(
 ):
     """
     Main function to generate pipeline documentation.
-    
+
     Args:
         docs_build_dir (Path): Directory where documentation will be built. Defaults to "./_docs"
         base_dir (Path): Root directory of the project. Defaults to current working directory
