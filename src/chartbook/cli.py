@@ -12,7 +12,7 @@ def main():
 @click.option('--project-dir', '-f', type=click.Path(), help='Path to project directory')
 @click.option('--pipeline-dev-mode', is_flag=True, default=False,
               help='Enable pipeline development mode')
-@click.option('--pipeline-theme', default="chart_book",
+@click.option('--pipeline-theme', default="chartbook",
               help='Theme to use for pipeline documentation')
 @click.option('--publish-dir', type=click.Path(), default="./_output/to_be_published/",
               help='Directory where files will be published')

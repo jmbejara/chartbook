@@ -275,7 +275,7 @@ def generate_all_pipeline_docs(
             pipeline_base_dir=pipeline_base_dir,
             docs_build_dir=docs_build_dir,
         )
-        if pipeline_theme == "chart_book":
+        if pipeline_theme == "chartbook":
             # Copy pipeline README to pipelines directory
             pipeline_readme_dir = docs_build_dir / "pipelines"
             pipeline_readme_dir.mkdir(parents=True, exist_ok=True)
@@ -306,7 +306,7 @@ def generate_all_pipeline_docs(
     dataframe_file_list = list(table_file_map.values())
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(base_dir))
 
-    if pipeline_theme == "chart_book":
+    if pipeline_theme == "chartbook":
         # Render dataframe.md
         template = environment.get_template("docs_src/dataframes.md")
         rendered_page = template.render(
@@ -432,7 +432,7 @@ def generate_dataframe_docs(
     if pipeline_theme == "pipeline":
         pipeline_page_link = "../index.md"
         dataframe_path_prefix = "../dataframes/"
-    elif pipeline_theme == "chart_book":
+    elif pipeline_theme == "chartbook":
         pipeline_page_link = f"../pipelines/{pipeline_id}_README.md"
         dataframe_path_prefix = ""
     else:
@@ -528,7 +528,7 @@ def generate_chart_docs(
     if PIPELINE_THEME == "pipeline":
         pipeline_page_link = "../index.md"
         dataframe_path_prefix = "../dataframes/"
-    elif PIPELINE_THEME == "chart_book":
+    elif PIPELINE_THEME == "chartbook":
         pipeline_page_link = f"../pipelines/{pipeline_id}_README.md"
         dataframe_path_prefix = "../dataframes/"
     else:
@@ -913,7 +913,7 @@ def main(
     docs_build_dir=Path("./_docs"),
     base_dir=Path.cwd(),
     pipeline_dev_mode=False,
-    pipeline_theme="chart_book",
+    pipeline_theme="chartbook",
     publish_dir=Path("./_output/to_be_published/"),
 ):
     """
@@ -923,7 +923,7 @@ def main(
         docs_build_dir (Path): Directory where documentation will be built. Defaults to "./_docs"
         base_dir (Path): Root directory of the project. Defaults to current working directory
         pipeline_dev_mode (bool): Enable pipeline development mode. Defaults to False
-        pipeline_theme (str): Theme to use for pipeline documentation. Defaults to "chart_book"
+        pipeline_theme (str): Theme to use for pipeline documentation. Defaults to "chartbook"
         publish_dir (Path): Directory where files will be published. Defaults to "./_output/to_be_published/"
     """
     # Ensure all paths are Path objects and resolved

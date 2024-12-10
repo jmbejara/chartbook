@@ -13,7 +13,7 @@ def run_pipeline_publish(
     docs_dir: Path,
     project_dir: Path,
     pipeline_dev_mode: bool = False,
-    pipeline_theme: str = "chart_book",
+    pipeline_theme: str = "chartbook",
     publish_dir: Path = Path("./_output/to_be_published/"),
     docs_build_dir: Path = Path("./_docs")
 ):
@@ -49,7 +49,7 @@ def generate_docs(
     output_dir: Path, 
     project_dir: Path,
     pipeline_dev_mode: bool = False,
-    pipeline_theme: str = "chart_book",
+    pipeline_theme: str = "chartbook",
     publish_dir: Path = Path("./_output/to_be_published/"),
     docs_build_dir: Path = Path("./_docs")
 ):
