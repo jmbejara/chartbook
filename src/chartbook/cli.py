@@ -1,6 +1,7 @@
 import click
 from pathlib import Path
 from chartbook.generator import generate_docs
+from chartbook.config import load_config, create_config_interactive
 
 
 @click.group()
@@ -37,6 +38,12 @@ def main():
     default="./_docs",
     help="Directory where documentation will be built",
 )
+@click.option(
+    "--keep-build-dir",
+    is_flag=True,
+    default=False,
+    help="Keep temporary build directory after generation",
+)
 def generate(
     output_dir,
     project_dir,
@@ -44,12 +51,9 @@ def generate(
     pipeline_theme,
     publish_dir,
     docs_build_dir,
+    keep_build_dir,
 ):
-    """Generate HTML documentation in the specified output directory.
-    
-    The documentation will be built in a temporary directory and only the final
-    HTML files will be copied to the output directory.
-    """
+    """Generate HTML documentation in the specified output directory."""
 
     # If project_dir not provided, use current directory
     if project_dir is None:
@@ -57,9 +61,13 @@ def generate(
     else:
         project_dir = Path(project_dir).resolve()
 
-    # Convert string paths to Path objects
-    publish_dir = Path(publish_dir).resolve()
-    docs_build_dir = Path(docs_build_dir).resolve()
+    # Check for config file and create if needed
+    config_path = project_dir / "chartbook.toml"
+    if not config_path.exists():
+        if click.confirm("A chartbook.toml file was not found. Create one now?", default=True):
+            create_config_interactive(project_dir)
+        else:
+            click.echo("Using default configuration.")
 
     try:
         generate_docs(
@@ -69,6 +77,7 @@ def generate(
             pipeline_theme=pipeline_theme,
             publish_dir=publish_dir,
             docs_build_dir=docs_build_dir,
+            keep_build_dir=keep_build_dir,
         )
         click.echo(f"Successfully generated documentation in {output_dir}")
     except Exception as e:

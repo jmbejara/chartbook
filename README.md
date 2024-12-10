@@ -26,3 +26,6 @@ or
 uv run chartbook generate --pipeline-theme pipeline ./_docs
 ```
 
+```
+ipython --pdb src/chartbook/cli.py -- generate --pipeline-theme chartbook ./_docs
+```

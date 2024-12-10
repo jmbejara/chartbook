@@ -1,0 +1,8 @@
+[theme]
+logo_path = "example/logo.png"
+favicon_path = ""
+
+[site]
+title = "MyChartBook"
+author = "Jeremy Bejarano"
+copyright = "2025"

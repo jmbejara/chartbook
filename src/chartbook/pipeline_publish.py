@@ -17,6 +17,7 @@ import jinja2
 import polars as pl
 
 from decouple import config
+from chartbook.generator import get_docs_src_path
 
 
 BASE_DIR = Path.cwd()
@@ -243,130 +244,59 @@ def get_pipeline_id_list(specs):
     return pipelines
 
 
-def generate_all_pipeline_docs(
-    specs,
-    docs_build_dir=DOCS_BUILD_DIR,
-    base_dir=BASE_DIR,
-    pipeline_theme=PIPELINE_THEME,
-):
-    """
-    Params
-    ------
-    specs: dict
-        This is a dict that contains specs for all pipelines to be processed.
-    docs_build_dir: Path
-        This is the output directory, where all generated docs will be placed.
-    base_dir: Path
-        This is used to identify the inputs. It's the base directory of the current project.
-        This is used to tell
-        the docs builder where all templates are stored, since the pipeline requires
-        that they be stored in a consistent spot relative to the base directory
-        of the project.
-    """
-    pipeline_ids = get_pipeline_id_list(specs)
+def generate_all_pipeline_docs(specs, docs_build_dir, base_dir, pipeline_theme):
+    """Generate all pipeline documentation."""
+    from jinja2 import Environment, FileSystemLoader, ChoiceLoader
+    from chartbook.generator import get_docs_src_path
 
-    for pipeline_id in pipeline_ids:
+    # Get paths
+    docs_src_path = get_docs_src_path()
+    project_docs_src = base_dir / "docs_src"
+    
+    # Set up template paths
+    template_paths = [
+        str(docs_src_path),
+        str(project_docs_src),
+    ]
+    
+    # Create Jinja environment with multiple template paths
+    environment = Environment(
+        loader=ChoiceLoader([
+            FileSystemLoader(path) for path in template_paths
+        ])
+    )
+
+    # Process dataframes
+    dataframe_file_list = []
+    for pipeline_id in specs:
         pipeline_specs = specs[pipeline_id]
-        pipeline_base_dir = Path(pipeline_specs["pipeline_base_dir"])
-
-        generate_pipeline_docs(
-            pipeline_id,
-            pipeline_specs,
-            pipeline_base_dir=pipeline_base_dir,
-            docs_build_dir=docs_build_dir,
-        )
-        if pipeline_theme == "chartbook":
-            # Copy pipeline README to pipelines directory
-            pipeline_readme_dir = docs_build_dir / "pipelines"
-            pipeline_readme_dir.mkdir(parents=True, exist_ok=True)
-
-            source_path = pipeline_base_dir / "README.md"
-            with open(source_path, "r") as file:
-                readme_content = file.readlines()
-
-            # Remove the first two lines, add line with link to pipeline GitHub repo and
-            # to index.html in html build dir, and then join the rest of the README.
-            pipeline_name = pipeline_specs["pipeline_name"]
-            git_repo_URL = pipeline_specs["git_repo_URL"]
-            readme_text = f"# `{pipeline_id}` {pipeline_name} \n\n " + (
-                f'Pipeline GitHub Repo <a href="{git_repo_URL}">{git_repo_URL}.</a>\n\n\n'
-                + f'Pipeline Web Page <a href="{git_repo_URL}">{git_repo_URL}.</a>\n\n\n'
-                + "".join(readme_content[2:])
-            )
-
-            readme_destination_filepath = (
-                pipeline_readme_dir / f"{pipeline_id}_README.md"
-            )
-            file_path = readme_destination_filepath
-            with open(file_path, mode="w", encoding="utf-8") as file:
-                file.write(readme_text)
-
-    ## Dataframe and Pipeline List in index.md
-    table_file_map = get_dataframes_and_dataframe_docs(base_dir=base_dir)
-    dataframe_file_list = list(table_file_map.values())
-    environment = jinja2.Environment(loader=jinja2.FileSystemLoader(base_dir))
+        for dataframe_id in pipeline_specs["dataframes"]:
+            dataframe_specs = pipeline_specs["dataframes"][dataframe_id]
+            # Create a sortable string representation
+            display_name = f"{pipeline_id}/{dataframe_id}"
+            file_path = f"dataframes/{pipeline_id}_{dataframe_id}.md"
+            dataframe_file_list.append({
+                "display_name": display_name,
+                "file_path": file_path,
+                "pipeline_id": pipeline_id,
+                "dataframe_id": dataframe_id,
+                "specs": dataframe_specs,
+            })
+    
+    # Sort the list by display_name
+    dataframe_file_list.sort(key=lambda x: x["display_name"])
 
     if pipeline_theme == "chartbook":
-        # Render dataframe.md
-        template = environment.get_template("docs_src/dataframes.md")
-        rendered_page = template.render(
-            dataframe_file_list=dataframe_file_list,
-        )
-        # Copy to build directory
-        file_path = docs_build_dir / "dataframes.md"
-        with open(file_path, mode="w", encoding="utf-8") as file:
-            file.write(rendered_page)
-
-        # Render dataframe.md
-        template = environment.get_template("docs_src/pipelines.md")
-        rendered_page = template.render(specs=specs, dot_or_dotdot="..")
-        # Copy to build directory
-        file_path = docs_build_dir / "pipelines.md"
-        with open(file_path, mode="w", encoding="utf-8") as file:
-            file.write(rendered_page)
-
-        readme_text = ""
-
-        # Render and copy index.md in chart base theme
-        template = environment.get_template("docs_src/index.md")
-        index_page = template.render(
-            specs=specs,
-            dataframe_file_list=dataframe_file_list,
-            pipeline_specs=pipeline_specs,
-            readme_text=readme_text,
-            pipeline_page_link=f"./pipelines/{pipeline_id}_README.md",
-            dot_or_dotdot=".",
-        )
-        file_path = docs_build_dir / "index.md"
-        with open(file_path, mode="w", encoding="utf-8") as file:
-            file.write(index_page)
-
-    elif pipeline_theme == "pipeline":
-        source_path = base_dir / "README.md"
-        with open(source_path, "r") as file:
-            readme_content = file.readlines()
-
-        # Remove the first two lines and join the rest
-        readme_text = "".join(readme_content[2:])
-
-        # Render and copy index.md in pipeline themes
-        template = environment.get_template("docs_src/index.md")
-        index_page = template.render(
-            specs=specs,
-            dataframe_file_list=dataframe_file_list,
-            pipeline_specs=pipeline_specs,
-            readme_text=readme_text,
-            pipeline_page_link="./index.md",
-            dot_or_dotdot=".",
-        )
-        file_path = docs_build_dir / "index.md"
-        with open(file_path, mode="w", encoding="utf-8") as file:
-            file.write(index_page)
-
-    else:
-        raise ValueError("Invalid Pipeline theme")
-
-    pass
+        # Render dataframes.md
+        try:
+            template = environment.get_template("dataframes.md")
+            rendered_page = template.render(
+                dataframe_file_list=dataframe_file_list,
+            )
+            output_path = docs_build_dir / "dataframes.md"
+            output_path.write_text(rendered_page)
+        except Exception as e:
+            raise RuntimeError(f"Failed to render dataframes.md: {str(e)}")
 
 
 def generate_pipeline_docs(
@@ -913,41 +843,35 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
 
 
 def main(
-    docs_build_dir=Path("./_docs"),
-    base_dir=Path.cwd(),
+    docs_build_dir=DOCS_BUILD_DIR,
+    base_dir=BASE_DIR,
     pipeline_dev_mode=False,
-    pipeline_theme="chartbook",
+    pipeline_theme=PIPELINE_THEME,
     publish_dir=Path("./_output/to_be_published/"),
 ):
-    """
-    Main function to generate pipeline documentation.
-
-    Args:
-        docs_build_dir (Path): Directory where documentation will be built. Defaults to "./_docs"
-        base_dir (Path): Root directory of the project. Defaults to current working directory
-        pipeline_dev_mode (bool): Enable pipeline development mode. Defaults to False
-        pipeline_theme (str): Theme to use for pipeline documentation. Defaults to "chartbook"
-        publish_dir (Path): Directory where files will be published. Defaults to "./_output/to_be_published/"
-    """
-    # Ensure all paths are Path objects and resolved
-    docs_build_dir = Path(docs_build_dir).resolve()
-    base_dir = Path(base_dir).resolve()
-    publish_dir = Path(publish_dir).resolve()
+    """Main function to generate pipeline documentation."""
+    # Convert paths to Path objects
+    docs_build_dir = Path(docs_build_dir)
+    base_dir = Path(base_dir)
+    publish_dir = Path(publish_dir)
 
     # Create build directory if it doesn't exist
     docs_build_dir.mkdir(parents=True, exist_ok=True)
 
-    # Align files for use by Sphinx
+    # Read pipeline specifications
     specs = read_specs(base_dir=base_dir)
 
-    dataset_plan, chart_plan_download, chart_plan_static = (
-        get_sphinx_file_alignment_plan(base_dir=base_dir, docs_build_dir=docs_build_dir)
+    # Get file alignment plan
+    dataset_plan, chart_plan_download, chart_plan_static = get_sphinx_file_alignment_plan(
+        base_dir=base_dir, docs_build_dir=docs_build_dir
     )
 
+    # Copy files according to plan
     copy_according_to_plan(dataset_plan)
     copy_according_to_plan(chart_plan_download)
     copy_according_to_plan(chart_plan_static)
 
+    # Generate pipeline documentation
     generate_all_pipeline_docs(
         specs,
         docs_build_dir=docs_build_dir,
@@ -955,8 +879,9 @@ def main(
         pipeline_theme=pipeline_theme,
     )
 
-    # Copy remaining docs_src files to build directory
-    copy_docs_src_to_build(base_dir / "docs_src", docs_build_dir)
+    # Copy docs_src files to build directory
+    docs_src_path = get_docs_src_path()
+    copy_docs_src_to_build(docs_src_path, docs_build_dir)
 
     # Only copy publishable files if in pipeline theme or dev mode
     if pipeline_theme == "pipeline" or pipeline_dev_mode:
