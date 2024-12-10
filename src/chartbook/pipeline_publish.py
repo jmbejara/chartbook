@@ -16,15 +16,12 @@ from typing import Union
 import jinja2
 import polars as pl
 
-import config
+from decouple import config
 
-BASE_DIR = config.BASE_DIR
-OUTPUT_DIR = config.OUTPUT_DIR
-PIPELINE_DEV_MODE = config.PIPELINE_DEV_MODE
-PIPELINE_THEME = config.PIPELINE_THEME
-PUBLISH_DIR = config.PUBLISH_DIR
-USER = config.USER
 
+BASE_DIR = Path.cwd()
+PIPELINE_THEME = config("PIPELINE_THEME", default="pipeline")
+PUBLISH_DIR = config("PUBLISH_DIR", default=Path("_output/publish"), cast=Path)
 DOCS_BUILD_DIR = BASE_DIR / Path("_docs")
 
 
@@ -250,6 +247,7 @@ def generate_all_pipeline_docs(
     specs,
     docs_build_dir=DOCS_BUILD_DIR,
     base_dir=BASE_DIR,
+    pipeline_theme=PIPELINE_THEME,
 ):
     """
     Params
@@ -276,9 +274,8 @@ def generate_all_pipeline_docs(
             pipeline_specs,
             pipeline_base_dir=pipeline_base_dir,
             docs_build_dir=docs_build_dir,
-            base_dir=base_dir,
         )
-        if PIPELINE_THEME == "chart_book":
+        if pipeline_theme == "chart_book":
             # Copy pipeline README to pipelines directory
             pipeline_readme_dir = docs_build_dir / "pipelines"
             pipeline_readme_dir.mkdir(parents=True, exist_ok=True)
@@ -309,7 +306,7 @@ def generate_all_pipeline_docs(
     dataframe_file_list = list(table_file_map.values())
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(base_dir))
 
-    if PIPELINE_THEME == "chart_book":
+    if pipeline_theme == "chart_book":
         # Render dataframe.md
         template = environment.get_template("docs_src/dataframes.md")
         rendered_page = template.render(
@@ -344,7 +341,7 @@ def generate_all_pipeline_docs(
         with open(file_path, mode="w", encoding="utf-8") as file:
             file.write(index_page)
 
-    elif PIPELINE_THEME == "pipeline":
+    elif pipeline_theme == "pipeline":
         source_path = base_dir / "README.md"
         with open(source_path, "r") as file:
             readme_content = file.readlines()
@@ -377,7 +374,6 @@ def generate_pipeline_docs(
     pipeline_specs,
     pipeline_base_dir=BASE_DIR,
     docs_build_dir=DOCS_BUILD_DIR,
-    base_dir=BASE_DIR,
 ):
     for dataframe_id in pipeline_specs["dataframes"]:
         generate_dataframe_docs(
@@ -406,6 +402,7 @@ def generate_dataframe_docs(
     pipeline_specs,
     docs_build_dir,
     pipeline_base_dir=BASE_DIR,
+    pipeline_theme=PIPELINE_THEME,
 ):
     """
     Generates documentation for a specific dataframe, including the most recent data dates.
@@ -432,10 +429,10 @@ def generate_dataframe_docs(
     # The name of the date column in the parquet file (default: "date").
     date_col = dataframe_specs["date_col"]
 
-    if PIPELINE_THEME == "pipeline":
+    if pipeline_theme == "pipeline":
         pipeline_page_link = "../index.md"
         dataframe_path_prefix = "../dataframes/"
-    elif PIPELINE_THEME == "chart_book":
+    elif pipeline_theme == "chart_book":
         pipeline_page_link = f"../pipelines/{pipeline_id}_README.md"
         dataframe_path_prefix = ""
     else:
@@ -578,7 +575,7 @@ def generate_chart_docs(
         file.write(chart_page)
 
 
-def _get(base_dir=BASE_DIR, dep_or_target="dep", pipeline_dev_mode=True):
+def _get(base_dir=BASE_DIR, dep_or_target="dep"):
     specs = read_specs(base_dir=base_dir)
     pipeline_ids = get_pipeline_id_list(specs)
     file_list = []
@@ -609,15 +606,15 @@ def _get(base_dir=BASE_DIR, dep_or_target="dep", pipeline_dev_mode=True):
     return file_list
 
 
-def get_file_deps(base_dir=BASE_DIR, pipeline_dev_mode=PIPELINE_DEV_MODE):
+def get_file_deps(base_dir=BASE_DIR):
     file_deps = _get(
-        base_dir=base_dir, dep_or_target="dep", pipeline_dev_mode=pipeline_dev_mode
+        base_dir=base_dir, dep_or_target="dep"
     )
     return file_deps
 
 
 def get_targets(base_dir=BASE_DIR):
-    file_deps = _get(base_dir=base_dir, dep_or_target="target", pipeline_dev_mode=True)
+    file_deps = _get(base_dir=base_dir, dep_or_target="target")
     return file_deps
 
 
@@ -792,7 +789,8 @@ def create_dodo_file_with_mod_date(date, dodo_path, publish_dir=PUBLISH_DIR):
 
     # print(f"File '{filename}' created in '{publish_dir}' with modification date set to {date}.")
 
-def copy_publishable_pipeline_files(specs, base_dir, publish_dir, verbose=True):
+
+def copy_publishable_pipeline_files(specs, base_dir, publish_dir, verbose=False):
     """
     Copy unaligned files to the publishing directory and Sphinx templates.
 
@@ -848,6 +846,7 @@ def copy_publishable_pipeline_files(specs, base_dir, publish_dir, verbose=True):
             except (OSError, PermissionError):
                 pass
 
+
 def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
     """
     Copies files from docs_src to _docs directory while excluding specified paths.
@@ -864,12 +863,12 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
     """
     if exclude_list is None:
         exclude_list = [
-            'charts',
-            'dataframes',
-            'notebooks',
-            'index.md',
-            'pipelines.md',
-            'dataframes.md'
+            "charts",
+            "dataframes",
+            "notebooks",
+            "index.md",
+            "pipelines.md",
+            "dataframes.md",
         ]
 
     docs_src_dir = Path(docs_src_dir)
@@ -886,7 +885,7 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
         return True
 
     # Walk through the source directory
-    for src_path in docs_src_dir.rglob('*'):
+    for src_path in docs_src_dir.rglob("*"):
         # Skip if path matches exclusion rules
         if not should_copy(src_path):
             continue
@@ -898,7 +897,7 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
         if src_path.is_file():
             # Create parent directories if they don't exist
             dst_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Copy the file content only, without attempting to copy permissions
             shutil.copyfile(src_path, dst_path)
 
@@ -909,14 +908,37 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
                 # If we can't set permissions, just continue
                 pass
 
-def main(docs_build_dir=DOCS_BUILD_DIR, base_dir=BASE_DIR):
+
+def main(
+    docs_build_dir=Path("./_docs"),
+    base_dir=Path.cwd(),
+    pipeline_dev_mode=False,
+    pipeline_theme="chart_book",
+    publish_dir=Path("./_output/to_be_published/"),
+):
+    """
+    Main function to generate pipeline documentation.
+    
+    Args:
+        docs_build_dir (Path): Directory where documentation will be built. Defaults to "./_docs"
+        base_dir (Path): Root directory of the project. Defaults to current working directory
+        pipeline_dev_mode (bool): Enable pipeline development mode. Defaults to False
+        pipeline_theme (str): Theme to use for pipeline documentation. Defaults to "chart_book"
+        publish_dir (Path): Directory where files will be published. Defaults to "./_output/to_be_published/"
+    """
+    # Ensure all paths are Path objects and resolved
+    docs_build_dir = Path(docs_build_dir).resolve()
+    base_dir = Path(base_dir).resolve()
+    publish_dir = Path(publish_dir).resolve()
+
+    # Create build directory if it doesn't exist
     docs_build_dir.mkdir(parents=True, exist_ok=True)
 
     # Align files for use by Sphinx
     specs = read_specs(base_dir=base_dir)
 
-    dataset_plan, chart_plan_download, chart_plan_static = get_sphinx_file_alignment_plan(
-        base_dir=base_dir, docs_build_dir=docs_build_dir
+    dataset_plan, chart_plan_download, chart_plan_static = (
+        get_sphinx_file_alignment_plan(base_dir=base_dir, docs_build_dir=docs_build_dir)
     )
 
     copy_according_to_plan(dataset_plan)
@@ -926,16 +948,17 @@ def main(docs_build_dir=DOCS_BUILD_DIR, base_dir=BASE_DIR):
     generate_all_pipeline_docs(
         specs,
         docs_build_dir=docs_build_dir,
+        base_dir=base_dir,
+        pipeline_theme=pipeline_theme,
     )
 
     # Copy remaining docs_src files to build directory
-    copy_docs_src_to_build(
-        base_dir / "docs_src",
-        docs_build_dir
-    )
+    copy_docs_src_to_build(base_dir / "docs_src", docs_build_dir)
 
-    if PIPELINE_THEME == "pipeline":
-        copy_publishable_pipeline_files(specs, base_dir, PUBLISH_DIR)
+    # Only copy publishable files if in pipeline theme or dev mode
+    if pipeline_theme == "pipeline" or pipeline_dev_mode:
+        copy_publishable_pipeline_files(specs, base_dir, publish_dir)
+
 
 if __name__ == "__main__":
     main()
