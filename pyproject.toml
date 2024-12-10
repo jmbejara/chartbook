@@ -13,7 +13,6 @@ dependencies = [
     "mypy-extensions>=1.0.0",
     "myst-nb>=1.1.2",
     "myst-parser>=2.0.0",
-    "pandas>=2.2.3",
     "polars>=1.9.0",
     "pydata-sphinx-theme==0.15.4",
     "pytest",

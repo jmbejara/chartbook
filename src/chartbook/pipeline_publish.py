@@ -635,18 +635,23 @@ def get_dataframes_and_dataframe_docs(base_dir=BASE_DIR):
 def get_last_modified_datetime(file_path: Union[Path, str]) -> datetime:
     """
     Returns the datetime that a file was last modified.
+    If the file doesn't exist, returns datetime.min.
 
     Args:
         file_path (Union[Path, str]): A pathlib.Path object or a string representing the file path.
 
     Returns:
-        datetime: A datetime object representing the last modification time.
+        datetime: A datetime object representing the last modification time,
+                 or datetime.min if the file doesn't exist.
     """
     file_path = Path(file_path)
-    # Get the last modified time in seconds since the epoch
-    mtime = os.path.getmtime(file_path)
-    # Convert the time to a datetime object
-    return datetime.fromtimestamp(mtime)
+    try:
+        # Get the last modified time in seconds since the epoch
+        mtime = os.path.getmtime(file_path)
+        # Convert the time to a datetime object
+        return datetime.fromtimestamp(mtime)
+    except (FileNotFoundError, OSError):
+        return datetime.min
 
 
 def get_most_recent_pipeline_source_modification(
