@@ -1,6 +1,7 @@
 import subprocess
 from pathlib import Path
 import importlib.resources
+import shutil
 
 
 def get_docs_src_path():
@@ -58,7 +59,7 @@ def generate_docs(
     """Generate documentation by running both pipeline publish and sphinx build.
 
     Args:
-        output_dir: Directory where documentation will be output
+        output_dir: Directory where final HTML documentation will be output
         project_dir: Root directory of the project
         pipeline_dev_mode: Enable pipeline development mode
         pipeline_theme: Theme to use for pipeline documentation
@@ -69,15 +70,36 @@ def generate_docs(
     publish_dir = Path(publish_dir).resolve()
     docs_build_dir = Path(docs_build_dir).resolve()
 
-    # First run pipeline publish
-    run_pipeline_publish(
-        docs_dir=output_dir,
-        project_dir=project_dir,
-        pipeline_dev_mode=pipeline_dev_mode,
-        pipeline_theme=pipeline_theme,
-        publish_dir=publish_dir,
-        docs_build_dir=docs_build_dir,
-    )
+    # Create temporary build directory
+    temp_dir = Path("._chart_book_temp")
+    temp_dir.mkdir(exist_ok=True)
 
-    # Then run sphinx build
-    run_sphinx_build(output_dir)
+    try:
+        # Run pipeline publish with temporary directory
+        run_pipeline_publish(
+            docs_dir=temp_dir,
+            project_dir=project_dir,
+            pipeline_dev_mode=pipeline_dev_mode,
+            pipeline_theme=pipeline_theme,
+            publish_dir=publish_dir,
+            docs_build_dir=docs_build_dir,
+        )
+
+        # Run sphinx build in temporary directory
+        run_sphinx_build(temp_dir)
+
+        # Create output directory if it doesn't exist
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy only the HTML build files to the final output directory
+        html_build_dir = temp_dir / "_build" / "html"
+        if html_build_dir.exists():
+            # Remove existing files in output directory
+            if output_dir.exists():
+                shutil.rmtree(output_dir)
+            # Copy HTML files to output directory
+            shutil.copytree(html_build_dir, output_dir)
+    finally:
+        # Clean up temporary directory
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir)

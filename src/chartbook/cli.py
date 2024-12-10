@@ -45,7 +45,11 @@ def generate(
     publish_dir,
     docs_build_dir,
 ):
-    """Generate HTML documentation in the specified output directory."""
+    """Generate HTML documentation in the specified output directory.
+    
+    The documentation will be built in a temporary directory and only the final
+    HTML files will be copied to the output directory.
+    """
 
     # If project_dir not provided, use current directory
     if project_dir is None:
@@ -66,7 +70,7 @@ def generate(
             publish_dir=publish_dir,
             docs_build_dir=docs_build_dir,
         )
-        click.echo(f"Successfully generated documentation in {output_dir}/_build/html")
+        click.echo(f"Successfully generated documentation in {output_dir}")
     except Exception as e:
         click.echo(f"Error generating documentation: {str(e)}", err=True)
         raise click.Abort()
