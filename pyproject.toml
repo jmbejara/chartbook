@@ -1,2 +1,59 @@
+[project]
+name = "chartbook"
+version = "0.1.0"
+description = "A tool for generating chart documentation websites"
+authors = [
+    { name = "Jeremiah Bejarano", email = "Jeremiah.Bejarano@gmail.com" }
+]
+dependencies = [
+    "ablog>=0.11.11",
+    "Jinja2>=3.1.4",
+    "linkify-it-py>=2.0.3",
+    "markdown-it-py>=3.0.0",
+    "mypy-extensions>=1.0.0",
+    "myst-nb>=1.1.2",
+    "myst-parser>=2.0.0",
+    "pandas>=2.2.3",
+    "polars>=1.9.0",
+    "pydata-sphinx-theme==0.15.4",
+    "pytest",
+    "python-decouple>=3.8",
+    "sphinx_design>=0.6.1",
+    "sphinx_external_toc>=1.0.1",
+    "sphinx-autodoc2>=0.5.0",
+    "sphinx-book-theme>=1.1.3",
+    "sphinx-comments>=0.0.3",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-jupyterbook-latex>=1.0.0",
+    "sphinx-multitoc-numbering>=0.1.3",
+    "sphinx-thebe>=0.3.1",
+    "sphinx-togglebutton>=0.3.2",
+    "Sphinx>=7.3.7",
+    "sphinxcontrib-applehelp>=2.0.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxcontrib-devhelp>=2.0.0",
+    "sphinxcontrib-htmlhelp>=2.1.0",
+    "sphinxcontrib-jsmath>=1.0.1",
+    "sphinxcontrib-qthelp>=2.0.0",
+    "sphinxcontrib-serializinghtml>=2.0.0",
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxext-rediraffe>=0.2.7",
+]
+requires-python = ">=3.10"
+
+classifiers = ["Private :: Do Not Upload"]
+
+[project.scripts]
+chartbook = "chartbook.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chartbook"]
+
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::Warning"]
+

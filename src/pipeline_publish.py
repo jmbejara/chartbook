@@ -909,14 +909,14 @@ def copy_docs_src_to_build(docs_src_dir, docs_build_dir, exclude_list=None):
                 # If we can't set permissions, just continue
                 pass
 
-if __name__ == "__main__":
-    DOCS_BUILD_DIR.mkdir(parents=True, exist_ok=True)
+def main(docs_build_dir=DOCS_BUILD_DIR, base_dir=BASE_DIR):
+    docs_build_dir.mkdir(parents=True, exist_ok=True)
 
-    ## Align files for use by Sphinx
-    specs = read_specs(base_dir=BASE_DIR)
+    # Align files for use by Sphinx
+    specs = read_specs(base_dir=base_dir)
 
-    dataset_plan, chart_plan_download, chart_plan_static = (
-        get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_DIR)
+    dataset_plan, chart_plan_download, chart_plan_static = get_sphinx_file_alignment_plan(
+        base_dir=base_dir, docs_build_dir=docs_build_dir
     )
 
     copy_according_to_plan(dataset_plan)
@@ -925,14 +925,17 @@ if __name__ == "__main__":
 
     generate_all_pipeline_docs(
         specs,
-        docs_build_dir=DOCS_BUILD_DIR,
+        docs_build_dir=docs_build_dir,
     )
 
     # Copy remaining docs_src files to build directory
     copy_docs_src_to_build(
-        BASE_DIR / "docs_src",
-        DOCS_BUILD_DIR
+        base_dir / "docs_src",
+        docs_build_dir
     )
 
     if PIPELINE_THEME == "pipeline":
-        copy_publishable_pipeline_files(specs, BASE_DIR, PUBLISH_DIR)
+        copy_publishable_pipeline_files(specs, base_dir, PUBLISH_DIR)
+
+if __name__ == "__main__":
+    main()

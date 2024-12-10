@@ -1,0 +1,991 @@
+# Project Instructions
+
+Use the project specification and guidelines as you build the app.
+
+Write the complete code for every step. Do not get lazy.
+
+Your goal is to completely finish whatever I ask for.
+
+## Overview
+
+This is a Python project that creates a Python CLI tool that can be installed via pip. The CLI tools should be called chartbook. Let's start with just one subcommand, `chartbook generate`. The full command that I'm interested in running is the following: 
+
+`chartbook generate ./_docs`
+
+This will generate the HTML files in the `./_docs/_build/html` directory.
+What this does is that it will run sphinx-build to create a sphinx site as I have defined here in the `dodo.py` file. It uses some templates and other .md files in the `docs_src` directory, copies those files to `_docs` and then runs sphinx-build. I would like all of this to happen in the command that I run. As you can see in the `dodo.py` file, I have two tasks that are related to what I want to happen. Here are the two tasks:
+
+```python
+# This is part of the dodo.py file that uses PyDoit.
+
+def task_pipeline_publish():
+    """Create Pipeline Docs for Use in Sphinx"""
+
+    file_dep = [
+        "./docs_src/_templates/chart_entry_bottom.md",
+        "./docs_src/_templates/chart_entry_top.md",
+        "./docs_src/_templates/dataframe_specs.md",
+        "./docs_src/_templates/pipeline_specs.md",
+        "./docs_src/charts.md",
+        "./docs_src/conf.py",
+        "./docs_src/dataframes.md",
+        "./docs_src/pipelines.md",
+        "./pipeline.json",
+        "./README.md",
+        "./src/pipeline_publish.py",
+        *pipeline_doc_file_deps,
+    ]
+
+    targets = [
+        # "./_docs/index.md", 
+        *generated_md_targets,
+    ]
+
+    return {
+        "actions": [
+            "ipython ./src/pipeline_publish.py",
+            ],
+        "targets": targets,
+        "file_dep": file_dep,
+        "clean": True,
+    }
+
+
+sphinx_targets = [
+    "./_docs/_build/html/index.html",
+    "./_docs/_build/html/myst_markdown_demos.html",
+]
+
+
+def task_compile_sphinx_docs():
+    """Compile Sphinx Docs"""
+
+    file_dep = [
+        "./docs_src/conf.py",
+        "./docs_src/contributing.md",
+        "./docs_src/index.md",
+        "./docs_src/myst_markdown_demos.md",
+        # Pipeline docs
+        "./docs_src/_templates/chart_entry_bottom.md",
+        "./docs_src/_templates/chart_entry_top.md",
+        "./docs_src/_templates/dataframe_specs.md",
+        "./docs_src/_templates/pipeline_specs.md",
+        "./docs_src/charts.md",
+        "./docs_src/dataframes.md",
+        "./docs_src/pipelines.md",
+        "./pipeline.json",
+        "./README.md",
+        "./src/pipeline_publish.py",
+    ]
+    return {
+        "actions": [
+            "sphinx-build -M html ./_docs/ ./_docs/_build",
+        ],  # Use docs as build destination
+        # "actions": ["sphinx-build -M html ./docs/ ./docs/_build"], # Previous standard organization
+        "targets": sphinx_targets,
+        "file_dep": file_dep,
+        "task_dep": [
+            "pipeline_publish",
+        ],
+        "clean": True,
+    }
+```
+
+I want the cli tool to do both of these tasks in a single shot. 
+
+
+## Tech Stack
+
+- Core: Python
+- Package Management: uv
+
+## Rules
+
+Follow these rules when working on this project.
+
+### Environment Rules
+
+- Keep all environment variables in `.env`
+- Use `python-dotenv` for environment management
+- Store API keys and sensitive data in `.env`
+- Add data source URLs to `config/data_sources.yaml`
+
+### Type Rules
+
+- Use Python type hints consistently
+- Prefer composition over inheritance
+
+
+## UV Guide: Working on Projects
+
+uv supports managing Python projects, which define their dependencies in a `pyproject.toml` file.
+
+### Creating a new project
+
+You can create a new Python project using the `uv init` command:```console
+$ uv init hello-world
+$ cd hello-world
+```
+
+Alternatively, you can initialize a project in the working directory:
+
+```console
+$ mkdir hello-world
+$ cd hello-world
+$ uv init
+```
+
+uv will create the following files:
+
+```text
+.
+├── .python-version
+├── README.md
+├── hello.py
+└── pyproject.toml
+```
+
+The `hello.py` file contains a simple "Hello world" program. Try it out with `uv run`:
+
+```console
+$ uv run hello.py
+Hello from hello-world!
+```
+
+### Project structure
+
+A project consists of a few important parts that work together and allow uv to manage your project.
+In addition to the files created by `uv init`, uv will create a virtual environment and `uv.lock`
+file in the root of your project the first time you run a project command, i.e., `uv run`,
+`uv sync`, or `uv lock`.
+
+A complete listing would look like:
+
+```text
+.
+├── .venv
+│   ├── bin
+│   ├── lib
+│   └── pyvenv.cfg
+├── .python-version
+├── README.md
+├── hello.py
+├── pyproject.toml
+└── uv.lock
+```
+
+#### `pyproject.toml`
+
+The `pyproject.toml` contains metadata about your project:
+
+```toml title="pyproject.toml"
+[project]
+name = "hello-world"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+dependencies = []
+```
+
+You'll use this file to specify dependencies, as well as details about the project such as its
+description or license. You can edit this file manually, or use commands like `uv add` and
+`uv remove` to manage your project from the terminal.
+
+!!! tip
+
+    See the official [`pyproject.toml` guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
+    for more details on getting started with the `pyproject.toml` format.
+
+You'll also use this file to specify uv [configuration options](../configuration/files.md) in a
+[`[tool.uv]`](../reference/settings.md) section.
+
+#### `.python-version`
+
+The `.python-version` file contains the project's default Python version. This file tells uv which
+Python version to use when creating the project's virtual environment.
+
+#### `.venv`
+
+The `.venv` folder contains your project's virtual environment, a Python environment that is
+isolated from the rest of your system. This is where uv will install your project's dependencies.
+
+See the [project environment](../concepts/projects/layout.md#the-project-environment) documentation
+for more details.
+
+#### `uv.lock`
+
+`uv.lock` is a cross-platform lockfile that contains exact information about your project's
+dependencies. Unlike the `pyproject.toml` which is used to specify the broad requirements of your
+project, the lockfile contains the exact resolved versions that are installed in the project
+environment. This file should be checked into version control, allowing for consistent and
+reproducible installations across machines.
+
+`uv.lock` is a human-readable TOML file but is managed by uv and should not be edited manually.
+
+See the [lockfile](../concepts/projects/layout.md#the-lockfile) documentation for more details.
+
+### Managing dependencies
+
+You can add dependencies to your `pyproject.toml` with the `uv add` command. This will also update
+the lockfile and project environment:
+
+```console
+$ uv add requests
+```
+
+You can also specify version constraints or alternative sources:
+
+```console
+$ # Specify a version constraint
+$ uv add 'requests==2.31.0'
+
+$ # Add a git dependency
+$ uv add git+https://github.com/psf/requests
+```
+
+To remove a package, you can use `uv remove`:
+
+```console
+$ uv remove requests
+```
+
+To upgrade a package, run `uv lock` with the `--upgrade-package` flag:
+
+```console
+$ uv lock --upgrade-package requests
+```
+
+The `--upgrade-package` flag will attempt to update the specified package to the latest compatible
+version, while keeping the rest of the lockfile intact.
+
+See the documentation on [managing dependencies](../concepts/projects/dependencies.md) for more
+details.
+
+### Running commands
+
+`uv run` can be used to run arbitrary scripts or commands in your project environment.
+
+Prior to every `uv run` invocation, uv will verify that the lockfile is up-to-date with the
+`pyproject.toml`, and that the environment is up-to-date with the lockfile, keeping your project
+in-sync without the need for manual intervention. `uv run` guarantees that your command is run in a
+consistent, locked environment.
+
+For example, to use `flask`:
+
+```console
+$ uv add flask
+$ uv run -- flask run -p 3000
+```
+
+Or, to run a script:
+
+```python title="example.py"
+# Require a project dependency
+import flask
+
+print("hello world")
+```
+
+```console
+$ uv run example.py
+```
+
+Alternatively, you can use `uv sync` to manually update the environment then activate it before
+executing a command:
+
+```console
+$ uv sync
+$ source .venv/bin/activate
+$ flask run -p 3000
+$ python example.py
+```
+
+!!! note
+
+    The virtual environment must be active to run scripts and commands in the project without `uv run`. Virtual environment activation differs per shell and platform.
+
+See the documentation on [running commands and scripts](../concepts/projects/run.md) in projects for
+more details.
+
+### Building distributions
+
+`uv build` can be used to build source distributions and binary distributions (wheel) for your
+project.
+
+By default, `uv build` will build the project in the current directory, and place the built
+artifacts in a `dist/` subdirectory:
+
+```console
+$ uv build
+$ ls dist/
+hello-world-0.1.0-py3-none-any.whl
+hello-world-0.1.0.tar.gz
+```
+
+See the documentation on [building projects](../concepts/projects/build.md) for more details.
+
+### Next steps
+
+To learn more about working on projects with uv, see the
+[projects concept](../concepts/projects/index.md) page and the
+[command reference](../reference/cli.md#uv).
+
+Or, read on to learn how to [publish your project as a package](./publish.md).
+
+## UV Guide: Publishing a package
+
+uv supports building Python packages into source and binary distributions via `uv build` and
+uploading them to a registry with `uv publish`.
+
+### Preparing your project for packaging
+
+Before attempting to publish your project, you'll want to make sure it's ready to be packaged for
+distribution.
+
+If your project does not include a `[build-system]` definition in the `pyproject.toml`, uv will not
+build it by default. This means that your project may not be ready for distribution. Read more about
+the effect of declaring a build system in the
+[project concept](../concepts/projects/config.md#build-systems) documentation.
+
+!!! note
+
+    If you have internal packages that you do not want to be published, you can mark them as
+    private:
+
+    ```toml
+    [project]
+    classifiers = ["Private :: Do Not Upload"]
+    ```
+
+    This setting makes PyPI reject your uploaded package from publishing. It does not affect
+    security or privacy settings on alternative registries.
+
+    We also recommend only generating per-project tokens: Without a PyPI token matching the project,
+    it can't be accidentally published.
+
+### Building your package
+
+Build your package with `uv build`:
+
+```console
+$ uv build
+```
+
+By default, `uv build` will build the project in the current directory, and place the built
+artifacts in a `dist/` subdirectory.
+
+Alternatively, `uv build <SRC>` will build the package in the specified directory, while
+`uv build --package <PACKAGE>` will build the specified package within the current workspace.
+
+!!! info
+
+    By default, `uv build` respects `tool.uv.sources` when resolving build dependencies from the
+    `build-system.requires` section of the `pyproject.toml`. When publishing a package, we recommend
+    running `uv build --no-sources` to ensure that the package builds correctly when `tool.uv.sources`
+    is disabled, as is the case when using other build tools, like [`pypa/build`](https://github.com/pypa/build).
+
+### Publishing your package
+
+Publish your package with `uv publish`:
+
+```console
+$ uv publish
+```
+
+Set a PyPI token with `--token` or `UV_PUBLISH_TOKEN`, or set a username with `--username` or
+`UV_PUBLISH_USERNAME` and password with `--password` or `UV_PUBLISH_PASSWORD`. For publishing to
+PyPI from GitHub Actions, you don't need to set any credentials. Instead,
+[add a trusted publisher to the PyPI project](https://docs.pypi.org/trusted-publishers/adding-a-publisher/).
+
+!!! note
+
+    PyPI does not support publishing with username and password anymore, instead you need to
+    generate a token. Using a token is equivalent to setting `--username __token__` and using the
+    token as password.
+
+Even though `uv publish` retries failed uploads, it can happen that publishing fails in the middle,
+with some files uploaded and some files still missing. With PyPI, you can retry the exact same
+command, existing identical files will be ignored. With other registries, use
+`--check-url <index url>` with the index URL (not the publish URL) the packages belong to. uv will
+skip uploading files that are identical to files in the registry, and it will also handle raced
+parallel uploads. Note that existing files need to match exactly with those previously uploaded to
+the registry, this avoids accidentally publishing source distribution and wheels with different
+contents for the same version.
+
+### Installing your package
+
+Test that the package can be installed and imported with `uv run`:
+
+```console
+$ uv run --with <PACKAGE> --no-project -- python -c "import <PACKAGE>"
+```
+
+The `--no-project` flag is used to avoid installing the package from your local project directory.
+
+!!! tip
+
+    If you have recently installed the package, you may need to include the
+    `--refresh-package <PACKAGE>` option to avoid using a cached version of the package.
+
+### Next steps
+
+To learn more about publishing packages, check out the
+[PyPA guides](https://packaging.python.org/en/latest/guides/section-build-and-publish/) on building
+and publishing.
+
+Or, read on for [guides](./integration/index.md) on integrating uv with other software.
+
+
+## UV Guide: Running Scripts
+
+A Python script is a file intended for standalone execution, e.g., with `python <script>.py`. Using
+uv to execute scripts ensures that script dependencies are managed without manually managing
+environments.
+
+!!! note
+
+    If you are not familiar with Python environments: every Python installation has an environment
+    that packages can be installed in. Typically, creating [_virtual_ environments](https://docs.python.org/3/library/venv.html) is recommended to
+    isolate packages required by each script. uv automatically manages virtual environments for you
+    and prefers a [declarative](#declaring-script-dependencies) approach to dependencies.
+
+### Running a script without dependencies
+
+If your script has no dependencies, you can execute it with `uv run`:
+
+```python title="example.py"
+print("Hello world")
+```
+
+```console
+$ uv run example.py
+Hello world
+```
+
+<!-- TODO(zanieb): Once we have a `python` shim, note you can execute it with `python` here -->
+
+Similarly, if your script depends on a module in the standard library, there's nothing more to do:
+
+```python title="example.py"
+import os
+
+print(os.path.expanduser("~"))
+```
+
+```console
+$ uv run example.py
+/Users/astral
+```
+
+Arguments may be provided to the script:
+
+```python title="example.py"
+import sys
+
+print(" ".join(sys.argv[1:]))
+```
+
+```console
+$ uv run example.py test
+test
+
+$ uv run example.py hello world!
+hello world!
+```
+
+Additionally, your script can be read directly from stdin:
+
+```console
+$ echo 'print("hello world!")' | uv run -
+```
+
+Or, if your shell supports [here-documents](https://en.wikipedia.org/wiki/Here_document):
+
+```bash
+uv run - <<EOF
+print("hello world!")
+EOF
+```
+
+Note that if you use `uv run` in a _project_, i.e. a directory with a `pyproject.toml`, it will
+install the current project before running the script. If your script does not depend on the
+project, use the `--no-project` flag to skip this:
+
+```console
+$ # Note, it is important that the flag comes _before_ the script
+$ uv run --no-project example.py
+```
+
+See the [projects guide](./projects.md) for more details on working in projects.
+
+### Running a script with dependencies
+
+When your script requires other packages, they must be installed into the environment that the
+script runs in. uv prefers to create these environments on-demand instead of using a long-lived
+virtual environment with manually managed dependencies. This requires explicit declaration of
+dependencies that are required for the script. Generally, it's recommended to use a
+[project](./projects.md) or [inline metadata](#declaring-script-dependencies) to declare
+dependencies, but uv supports requesting dependencies per invocation as well.
+
+For example, the following script requires `rich`.
+
+```python title="example.py"
+import time
+from rich.progress import track
+
+for i in track(range(20), description="For example:"):
+    time.sleep(0.05)
+```
+
+If executed without specifying a dependency, this script will fail:
+
+```console
+$ uv run --no-project example.py
+Traceback (most recent call last):
+  File "/Users/astral/example.py", line 2, in <module>
+    from rich.progress import track
+ModuleNotFoundError: No module named 'rich'
+```
+
+Request the dependency using the `--with` option:
+
+```console
+$ uv run --with rich example.py
+For example: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:01
+```
+
+Constraints can be added to the requested dependency if specific versions are needed:
+
+```console
+$ uv run --with 'rich>12,<13' example.py
+```
+
+Multiple dependencies can be requested by repeating with `--with` option.
+
+Note that if `uv run` is used in a _project_, these dependencies will be included _in addition_ to
+the project's dependencies. To opt-out of this behavior, use the `--no-project` flag.
+
+### Creating a Python script
+
+Python recently added a standard format for
+[inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata).
+It allows for selecting Python versions and defining dependencies. Use `uv init --script` to
+initialize scripts with the inline metadata:
+
+```console
+$ uv init --script example.py --python 3.12
+```
+
+### Declaring script dependencies
+
+The inline metadata format allows the dependencies for a script to be declared in the script itself.
+
+uv supports adding and updating inline script metadata for you. Use `uv add --script` to declare the
+dependencies for the script:
+
+```console
+$ uv add --script example.py 'requests<3' 'rich'
+```
+
+This will add a `script` section at the top of the script declaring the dependencies using TOML:
+
+```python title="example.py"
+# /// script
+# dependencies = [
+#   "requests<3",
+#   "rich",
+# ]
+# ///
+
+import requests
+from rich.pretty import pprint
+
+resp = requests.get("https://peps.python.org/api/peps.json")
+data = resp.json()
+pprint([(k, v["title"]) for k, v in data.items()][:10])
+```
+
+uv will automatically create an environment with the dependencies necessary to run the script, e.g.:
+
+```console
+$ uv run example.py
+[
+│   ('1', 'PEP Purpose and Guidelines'),
+│   ('2', 'Procedure for Adding New Modules'),
+│   ('3', 'Guidelines for Handling Bug Reports'),
+│   ('4', 'Deprecation of Standard Modules'),
+│   ('5', 'Guidelines for Language Evolution'),
+│   ('6', 'Bug Fix Releases'),
+│   ('7', 'Style Guide for C Code'),
+│   ('8', 'Style Guide for Python Code'),
+│   ('9', 'Sample Plaintext PEP Template'),
+│   ('10', 'Voting Guidelines')
+]
+```
+
+!!! important
+
+    When using inline script metadata, even if `uv run` is [used in a _project_](../concepts/projects/run.md), the project's dependencies will be ignored. The `--no-project` flag is not required.
+
+uv also respects Python version requirements:
+
+```python title="example.py"
+# /// script
+# requires-python = ">=3.12"
+# dependencies = []
+# ///
+
+# Use some syntax added in Python 3.12
+type Point = tuple[float, float]
+print(Point)
+```
+
+!!! note
+
+    The `dependencies` field must be provided even if empty.
+
+`uv run` will search for and use the required Python version. The Python version will download if it
+is not installed — see the documentation on [Python versions](../concepts/python-versions.md) for
+more details.
+
+### Improving reproducibility
+
+uv supports an `exclude-newer` field in the `tool.uv` section of inline script metadata to limit uv
+to only considering distributions released before a specific date. This is useful for improving the
+reproducibility of your script when run at a later point in time.
+
+The date must be specified as an [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339.html) timestamp
+(e.g., `2006-12-02T02:07:43Z`).
+
+```python title="example.py"
+# /// script
+# dependencies = [
+#   "requests",
+# ]
+# [tool.uv]
+# exclude-newer = "2023-10-16T00:00:00Z"
+# ///
+
+import requests
+
+print(requests.__version__)
+```
+
+### Using different Python versions
+
+uv allows arbitrary Python versions to be requested on each script invocation, for example:
+
+```python title="example.py"
+import sys
+
+print(".".join(map(str, sys.version_info[:3])))
+```
+
+```console
+$ # Use the default Python version, may differ on your machine
+$ uv run example.py
+3.12.6
+```
+
+```console
+$ # Use a specific Python version
+$ uv run --python 3.10 example.py
+3.10.15
+```
+
+See the [Python version request](../concepts/python-versions.md#requesting-a-version) documentation
+for more details on requesting Python versions.
+
+### Using GUI scripts
+
+On Windows `uv` will run your script ending with `.pyw` extension using `pythonw`:
+
+```python title="example.pyw"
+from tkinter import Tk, ttk
+
+root = Tk()
+root.title("uv")
+frm = ttk.Frame(root, padding=10)
+frm.grid()
+ttk.Label(frm, text="Hello World").grid(column=0, row=0)
+root.mainloop()
+```
+
+```console
+PS> uv run example.pyw
+```
+
+![Run Result](../assets/uv_gui_script_hello_world.png){: style="height:50px;width:150px"}
+
+Similarly, it works with dependencies as well:
+
+```python title="example_pyqt.pyw"
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QGridLayout
+
+app = QApplication(sys.argv)
+widget = QWidget()
+grid = QGridLayout()
+
+text_label = QLabel()
+text_label.setText("Hello World!")
+grid.addWidget(text_label)
+
+widget.setLayout(grid)
+widget.setGeometry(100, 100, 200, 50)
+widget.setWindowTitle("uv")
+widget.show()
+sys.exit(app.exec_())
+```
+
+```console
+PS> uv run --with PyQt5 example_pyqt.pyw
+```
+
+![Run Result](../assets/uv_gui_script_hello_world_pyqt.png){: style="height:50px;width:150px"}
+
+### Next steps
+
+To learn more about `uv run`, see the [command reference](../reference/cli.md#uv-run).
+
+Or, read on to learn how to [run and install tools](./tools.md) with uv.
+
+## UV Guide: Using tools
+
+Many Python packages provide applications that can be used as tools. uv has specialized support for
+easily invoking and installing tools.
+
+### Running tools
+
+The `uvx` command invokes a tool without installing it.
+
+For example, to run `ruff`:
+
+```console
+$ uvx ruff
+```
+
+!!! note
+
+    This is exactly equivalent to:
+
+    ```console
+    $ uv tool run ruff
+    ```
+
+    `uvx` is provided as an alias for convenience.
+
+Arguments can be provided after the tool name:
+
+```console
+$ uvx pycowsay hello from uv
+
+  -------------
+< hello from uv >
+  -------------
+   \   ^__^
+    \  (oo)\_______
+       (__)\       )\/\
+           ||----w |
+           ||     ||
+
+```
+
+Tools are installed into temporary, isolated environments when using `uvx`.
+
+!!! note
+
+    If you are running a tool in a [_project_](../concepts/projects/index.md) and the tool requires that
+    your project is installed, e.g., when using `pytest` or `mypy`, you'll want to use
+    [`uv run`](./projects.md#running-commands) instead of `uvx`. Otherwise, the tool will be run in
+    a virtual environment that is isolated from your project.
+
+    If your project has a flat structure, e.g., instead of using a `src` directory for modules,
+    the project itself does not need to be installed and `uvx` is fine. In this case, using
+    `uv run` is only beneficial if you want to pin the version of the tool in the project's
+    dependencies.
+
+### Commands with different package names
+
+When `uvx ruff` is invoked, uv installs the `ruff` package which provides the `ruff` command.
+However, sometimes the package and command names differ.
+
+The `--from` option can be used to invoke a command from a specific package, e.g. `http` which is
+provided by `httpie`:
+
+```console
+$ uvx --from httpie http
+```
+
+### Requesting specific versions
+
+To run a tool at a specific version, use `command@<version>`:
+
+```console
+$ uvx ruff@0.3.0 check
+```
+
+To run a tool at the latest version, use `command@latest`:
+
+```console
+$ uvx ruff@latest check
+```
+
+The `--from` option can also be used to specify package versions, as above:
+
+```console
+$ uvx --from 'ruff==0.3.0' ruff check
+```
+
+Or, to constrain to a range of versions:
+
+```console
+$ uvx --from 'ruff>0.2.0,<0.3.0' ruff check
+```
+
+Note the `@` syntax cannot be used for anything other than an exact version.
+
+### Requesting extras
+
+The `--from` option can be used to run a tool with extras:
+
+```console
+$ uvx --from 'mypy[faster-cache,reports]' mypy --xml-report mypy_report
+```
+
+This can also be combined with version selection:
+
+```console
+$ uvx --from 'mypy[faster-cache,reports]==1.13.0' mypy --xml-report mypy_report
+```
+
+### Requesting different sources
+
+The `--from` option can also be used to install from alternative sources.
+
+For example, to pull from git:
+
+```console
+$ uvx --from git+https://github.com/httpie/cli httpie
+```
+
+You can also pull the latest commit from a specific named branch:
+
+```console
+$ uvx --from git+https://github.com/httpie/cli@master httpie
+```
+
+Or pull a specific tag:
+
+```console
+$ uvx --from git+https://github.com/httpie/cli@3.2.4 httpie
+```
+
+Or even a specific commit:
+
+```console
+$ uvx --from git+https://github.com/httpie/cli@2843b87 httpie
+```
+
+### Commands with plugins
+
+Additional dependencies can be included, e.g., to include `mkdocs-material` when running `mkdocs`:
+
+```console
+$ uvx --with mkdocs-material mkdocs --help
+```
+
+### Installing tools
+
+If a tool is used often, it is useful to install it to a persistent environment and add it to the
+`PATH` instead of invoking `uvx` repeatedly.
+
+!!! tip
+
+    `uvx` is a convenient alias for `uv tool run`. All of the other commands for interacting with
+    tools require the full `uv tool` prefix.
+
+To install `ruff`:
+
+```console
+$ uv tool install ruff
+```
+
+When a tool is installed, its executables are placed in a `bin` directory in the `PATH` which allows
+the tool to be run without uv. If it's not on the `PATH`, a warning will be displayed and
+`uv tool update-shell` can be used to add it to the `PATH`.
+
+After installing `ruff`, it should be available:
+
+```console
+$ ruff --version
+```
+
+Unlike `uv pip install`, installing a tool does not make its modules available in the current
+environment. For example, the following command will fail:
+
+```console
+$ python -c "import ruff"
+```
+
+This isolation is important for reducing interactions and conflicts between dependencies of tools,
+scripts, and projects.
+
+Unlike `uvx`, `uv tool install` operates on a _package_ and will install all executables provided by
+the tool.
+
+For example, the following will install the `http`, `https`, and `httpie` executables:
+
+```console
+$ uv tool install httpie
+```
+
+Additionally, package versions can be included without `--from`:
+
+```console
+$ uv tool install 'httpie>0.1.0'
+```
+
+And, similarly, for package sources:
+
+```console
+$ uv tool install git+https://github.com/httpie/cli
+```
+
+As with `uvx`, installations can include additional packages:
+
+```console
+$ uv tool install mkdocs --with mkdocs-material
+```
+
+### Upgrading tools
+
+To upgrade a tool, use `uv tool upgrade`:
+
+```console
+$ uv tool upgrade ruff
+```
+
+Tool upgrades will respect the version constraints provided when installing the tool. For example,
+`uv tool install ruff >=0.3,<0.4` followed by `uv tool upgrade ruff` will upgrade Ruff to the latest
+version in the range `>=0.3,<0.4`.
+
+To instead replace the version constraints, re-install the tool with `uv tool install`:
+
+```console
+$ uv tool install ruff>=0.4
+```
+
+To instead upgrade all tools:
+
+```console
+$ uv tool upgrade --all
+```
+
+### Next steps
+
+To learn more about managing tools with uv, see the [Tools concept](../concepts/tools.md) page and
+the [command reference](../reference/cli.md#uv-tool).
+
+Or, read on to learn how to to [work on projects](./projects.md).
+
