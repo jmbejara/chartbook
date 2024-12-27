@@ -1,0 +1,54 @@
+{
+    "COIN":{
+        "chartbase_format_version": "0.0.1",
+        "pipeline_name": "Digital Assets and Stablecoins Pipeline",
+        "pipeline_description": "This pipeline produces charts and dataframes related to digital assets. For now it only uses CoinMarketCap data.",
+        "lead_pipeline_developer": "Jeremiah Bejarano",
+        "contributors": [
+            "Jeremiah Bejarano"
+        ],
+        "runs_on_grid_or_windows_or_other": "All",
+        "git_repo_URL": "https://github.com/jmbejara/coin",
+        "README_file_path": "./README.md",
+        "dataframes": {
+            "dig_asset_market_cap": {
+                "dataframe_name": "Digital Asset Market Capitalization from CoinMarketCap",
+                "short_description_df":"Total market capitalization by digital asset category. ",
+                "data_sources": [ "CoinMarketCap"],
+                "data_providers": [ "CoinMarketCap"],
+                "links_to_data_providers": ["https://coinmarketcap.com/charts/"],
+                "topic_tags": ["Digital Assets"],
+                "type_of_data_access": "Public",
+                "data_license": "No",
+                "license_expiration_date": "N/A",
+                "need_to_contact_provider": "Yes",
+                "provider_contact_info": "",
+                "restriction_on_use": "Unsure",
+                "how_is_pulled": "Web API",
+                "path_to_parquet_data": "./_data/CoinMarketCap.parquet",
+                "path_to_excel_data": "./_data/CoinMarketCap.xlsx",
+                "date_col": "date",
+                "path_to_dataframe_doc": "./docs_src/dataframes/COIN_dig_asset_market_cap.md"
+            }
+        },
+        "charts": {
+            "CoinMarketCap_chart": {
+                "chart_name": "Digital Asset Market Capitalization from CoinMarketCap",
+                "short_description_chart":"Total market capitalization by digital asset category. ",
+                "dataframe_id": "dig_asset_market_cap",
+                "topic_tags": ["Digital Assets"],
+                "data_series_start_date": "2/29/2012",
+                "data_frequency": "Weekly",
+                "observation_period": "A single day at 8pm",
+                "lag_in_data_release": "1 week",
+                "data_release_dates": "Sundays",
+                "seasonal_adjustment": "None",
+                "units": "Dollars (USD)",
+                "data_series": "",
+                "mnemonic": "",
+                "path_to_html_chart": "./_output/CoinMarketCap_chart.html",
+                "path_to_chart_doc": "./docs_src/charts/COIN_CoinMarketCap_chart.md"
+            }
+        }
+    }
+}
