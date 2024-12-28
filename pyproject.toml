@@ -1,9 +1,24 @@
 [project]
 name = "chartbook"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A tool for generating chart documentation websites"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "All Rights Reserved"}
+keywords = ["Dashboards", "Catalogs", "Data", "Analytics"]
 authors = [
-    { name = "Jeremiah Bejarano", email = "Jeremiah.Bejarano@gmail.com" }
+    { name = "Jeremiah Bejarano", email = "Jeremiah.Bejarano@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
     "ablog>=0.11.11",
@@ -42,29 +57,39 @@ dependencies = [
     "tomli>=2.2.1",
     "tomli-w>=1.1.0",
 ]
-requires-python = ">=3.10"
-
-classifiers = ["Private :: Do Not Upload"]
 
 [project.scripts]
 chartbook = "chartbook.cli:main"
+
+[project.urls]
+Documentation = "https://github.com/jmbejara/chartbook#readme"
+Issues = "https://github.com/jmbejara/chartbook/issues"
+Source = "https://github.com/jmbejara/chartbook"
+
+[tool.hatch.version]
+path = "src/chartbook/__about__.py"
+
+[tool.coverage.run]
+source_pkgs = ["chartbook", "tests"]
+branch = true
+parallel = true
+omit = ["src/chartbook/__about__.py"]
+
+[tool.coverage.paths]
+chartbook = ["src/chartbook", "*/chartbook/src/chartbook"]
+tests = ["tests", "*/chartbook/tests"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-include = [
-    "src/chartbook/**",
-    "MANIFEST.in",
-]
+packages = ["src/chartbook"]
+include = ["src/chartbook/data/**"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/chartbook"]
+sources = ["src"]
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::Warning"]
-
-[tool.setuptools]
-package-data = {"chartbook" = ["assets/*", "templates/*"]}
-
