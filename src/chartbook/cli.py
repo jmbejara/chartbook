@@ -55,6 +55,21 @@ def generate(
 ):
     """Generate HTML documentation in the specified output directory."""
 
+    # Convert output_dir to Path
+    output_dir = Path(output_dir).resolve()
+    
+    # Safety checks for output directory
+    if output_dir == Path.cwd():
+        raise click.UsageError("Output directory cannot be the current directory '.' to prevent accidental project deletion")
+    
+    if output_dir.exists():
+        # Check if directory is empty
+        if any(output_dir.iterdir()):
+            raise click.UsageError(
+                f"Output directory '{output_dir}' already exists and is not empty. "
+                "Please delete it manually if you want to regenerate documentation."
+            )
+
     # If project_dir not provided, use current directory
     if project_dir is None:
         project_dir = Path.cwd()

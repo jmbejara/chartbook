@@ -154,9 +154,7 @@ def generate_docs(
         output_dir.mkdir(parents=True, exist_ok=True)
         html_build_dir = temp_dir / "_build" / "html"
         if html_build_dir.exists():
-            if output_dir.exists():
-                shutil.rmtree(output_dir)
-            shutil.copytree(html_build_dir, output_dir)
+            shutil.copytree(html_build_dir, output_dir, dirs_exist_ok=True)
     finally:
         if not keep_build_dir:
             # Clean up temporary directory if keep_build_dir is False
