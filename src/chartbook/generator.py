@@ -79,7 +79,7 @@ def generate_docs(
     config = load_config(project_dir)
 
     # Create temporary build directory
-    temp_dir = Path("._chart_book_temp")
+    temp_dir = Path("_chart_book_temp")
     temp_dir.mkdir(exist_ok=True)
 
     try:

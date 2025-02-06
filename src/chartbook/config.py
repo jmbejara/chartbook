@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 import shutil
 import importlib.resources
+from datetime import datetime
 
 DEFAULT_CONFIG = {
     "theme": {
@@ -54,10 +55,13 @@ def create_config_interactive(project_dir: Path) -> dict:
         )
         config["theme"]["logo_path"] = str(Path(logo_path))
     
-    if click.confirm("Would you like to customize site information?", default=False):
-        config["site"]["title"] = click.prompt("Site title", default="ChartBook")
-        config["site"]["author"] = click.prompt("Author name", default="")
-        config["site"]["copyright"] = click.prompt("Copyright", default="")
+    # Always prompt for site information
+    config["site"]["title"] = click.prompt("Site title", default="ChartBook")
+    config["site"]["author"] = click.prompt("Author name", default="")
+    config["site"]["copyright"] = click.prompt(
+        "Copyright",
+        default=str(datetime.now().year)
+    )
     
     # Save config
     config_path = project_dir / "chartbook.toml"

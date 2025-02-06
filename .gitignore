@@ -88,7 +88,3 @@ src/z_scratch_project_template.ipynb
 
 *Thumbs.db
 src/z_scratch_cb.ipynb
-
-# Temporary build directory
-._chart_book_temp/
-chartbase.toml

@@ -1,5 +1,5 @@
 [theme]
-logo_path = "example/logo.png"
+logo_path = "./logo.png"
 favicon_path = ""
 
 [site]
