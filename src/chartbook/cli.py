@@ -1,7 +1,10 @@
-import click
+import shutil
 from pathlib import Path
+
+import click
+
+from chartbook.config import create_config_interactive
 from chartbook.generator import generate_docs
-from chartbook.config import load_config, create_config_interactive
 
 
 @click.group()
@@ -11,7 +14,7 @@ def main():
 
 
 @main.command()
-@click.argument("output_dir", type=click.Path())
+@click.argument("output_dir", type=click.Path(), default="./_docs", required=False)
 @click.option(
     "--project-dir", "-f", type=click.Path(), help="Path to project directory"
 )
@@ -35,7 +38,7 @@ def main():
 @click.option(
     "--docs-build-dir",
     type=click.Path(),
-    default="./_docs",
+    default="./_docs_build",
     help="Directory where documentation will be built",
 )
 @click.option(
@@ -43,6 +46,13 @@ def main():
     is_flag=True,
     default=False,
     help="Keep temporary build directory after generation",
+)
+@click.option(
+    "--overwrite",
+    "-w",
+    is_flag=True,
+    default=False,
+    help="Overwrite existing output directory by deleting it first",
 )
 def generate(
     output_dir,
@@ -52,23 +62,29 @@ def generate(
     publish_dir,
     docs_build_dir,
     keep_build_dir,
+    overwrite,
 ):
     """Generate HTML documentation in the specified output directory."""
 
     # Convert output_dir to Path
     output_dir = Path(output_dir).resolve()
-    
-    # Safety checks for output directory
+
+    # Prevent deleting the current working directory
     if output_dir == Path.cwd():
-        raise click.UsageError("Output directory cannot be the current directory '.' to prevent accidental project deletion")
-    
+        raise click.UsageError(
+            "Output directory cannot be the current directory '.' to prevent accidental project deletion"
+        )
+
+    # If the output directory exists, delete it if the --overwrite flag is provided
     if output_dir.exists():
-        # Check if directory is empty
-        if any(output_dir.iterdir()):
-            raise click.UsageError(
-                f"Output directory '{output_dir}' already exists and is not empty. "
-                "Please delete it manually if you want to regenerate documentation."
-            )
+        if overwrite:
+            shutil.rmtree(output_dir)
+        else:
+            if any(output_dir.iterdir()):
+                raise click.UsageError(
+                    f"Output directory '{output_dir}' already exists and is not empty. "
+                    "Please delete it manually or use the --overwrite flag to remove it."
+                )
 
     # If project_dir not provided, use current directory
     if project_dir is None:
@@ -79,7 +95,9 @@ def generate(
     # Check for config file and create if needed
     config_path = project_dir / "chartbook.toml"
     if not config_path.exists():
-        if click.confirm("A chartbook.toml file was not found. Create one now?", default=True):
+        if click.confirm(
+            "A chartbook.toml file was not found. Create one now?", default=True
+        ):
             create_config_interactive(project_dir)
         else:
             click.echo("Using default configuration.")
