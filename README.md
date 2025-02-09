@@ -1,10 +1,10 @@
 Chart Book
 ==========
 
-[![PyPI - Version](https://img.shields.io/badge/TestPyPI-v0.0.4-blue?logo=pypi)](https://test.pypi.org/project/chartbook
-<!-- [![PyPI version](https://img.shields.io/pypi/v/chartbook?logo=pypi)](https://pypi.org/project/chartbook/) -->
+
+[![PyPI - Version](https://img.shields.io/badge/TestPyPI-v0.0.4-blue?logo=pypi)](https://test.pypi.org/project/chartbook)
 [![PyPI - Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue?logo=python)](https://test.pypi.org/project/chartbook)
-[![Tests](https://github.com/finm-32900/chartbook-example/actions/workflows/test.yml/badge.svg)](https://github.com/finm-32900/chartbook-example/actions/workflows/test.yml)
+[![Tests](https://github.com/finm-32900/chartbook/actions/workflows/test.yml/badge.svg)](https://github.com/finm-32900/chartbook-example/actions/workflows/test.yml)
 
 A Python package for generating a centralized chart and analytics catalog, and maintaining a series of reproducible analytics pipelines. 
 
