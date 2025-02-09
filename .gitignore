@@ -2,8 +2,6 @@
 .env*
 !.env.example*
 
-_output/
-
 # Other
 temp*.csv
 */_build/

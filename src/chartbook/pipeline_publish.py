@@ -960,6 +960,7 @@ def main(
         docs_build_dir=docs_build_dir,
         pipeline_theme=pipeline_theme,
         docs_src_dir=docs_src_dir,
+        base_dir=base_dir,
     )
 
 
