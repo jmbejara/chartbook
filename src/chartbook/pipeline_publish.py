@@ -16,13 +16,13 @@ from typing import Union
 import jinja2
 import polars as pl
 
-BASE_DIR = Path(".")
+BASE_DIR = Path(".").resolve()
 OUTPUT_DIR = Path("./_output")
 PIPELINE_DEV_MODE = False
 PIPELINE_THEME = "pipeline"
 PUBLISH_DIR = Path("./_output/to_be_published")
 DOCS_BUILD_DIR = BASE_DIR / Path("_docs")
-DOCS_SRC_DIR = BASE_DIR / Path("docs_src")
+DOCS_SRC_DIR = BASE_DIR / Path("_docs_src")
 
 
 def validate_pipeline_json_path(path: Path) -> bool:
@@ -321,11 +321,9 @@ def generate_all_pipeline_docs(
         # Render dataframe.md
         template_path = "dataframes.md"
         template = environment.get_template(template_path)
-        print(f"docs_src_dir: {docs_src_dir}")
-        print(f"base_dir: {base_dir}")
         rendered_page = template.render(
             dataframe_file_list=dataframe_file_list,
-            docs_src_dir=docs_src_dir.relative_to(base_dir)  # Pass relative path
+            # docs_src_dir=docs_src_dir.relative_to(base_dir)  # Pass relative path
         )
         # Copy to build directory
         file_path = docs_build_dir / "dataframes.md"
@@ -973,4 +971,4 @@ def main(
 
 
 if __name__ == "__main__":
-    pass
+    main()

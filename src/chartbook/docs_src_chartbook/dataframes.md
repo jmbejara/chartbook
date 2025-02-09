@@ -2,9 +2,7 @@
 
 ```{toctree}
 :maxdepth: 1
-{% for item in dataframe_file_list %}
-{% if item.file_path %}
-{{item.file_path}}
-{% endif %}
+{% for file_path in dataframe_file_list %}
+{{file_path}}
 {% endfor %}
 ```
