@@ -1,4 +1,4 @@
-{% include "docs_src/_templates/chart_entry_top.md" %}
+{% include "_docs_src/_templates/chart_entry_top.md" %}
 
 **Description:** This chat plots repo rates relative the midpoint of the Federal Funds target range. The shaded area shows the Federal Funds target range. During 2019, the Secured Overnight Financing Rate (SOFR), a broad measure of the cost of borrowing cash overnight collateralized by Treasury securities via repurchase agreements, often exceeded the upper limit of the Federal Funds target range. This chart also shows the ratio of the size of the Fed's balance sheet to US GDP. Since SOFR does not extend back further than 2017, we use the average repo rate in the triparty repo market whenever SOFR is unavailable.
 
@@ -26,4 +26,4 @@ balance\_sheet\_ratio &= balance\_sheet / GDP
 
 
 
-{% include "docs_src/_templates/chart_entry_bottom.md" %}
+{% include "_docs_src/_templates/chart_entry_bottom.md" %}

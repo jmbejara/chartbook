@@ -1,4 +1,4 @@
-{% include "docs_src/_templates/chart_entry_top.md" %}
+{% include "_docs_src/_templates/chart_entry_top.md" %}
 
 **Description:** Total market capitalization by digital asset category. 
 
@@ -15,4 +15,4 @@
 
 
 
-{% include "docs_src/_templates/chart_entry_bottom.md" %}
+{% include "_docs_src/_templates/chart_entry_bottom.md" %}

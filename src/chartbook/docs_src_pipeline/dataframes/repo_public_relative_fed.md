@@ -25,8 +25,8 @@ This dataframe contains, among other things,repo rates relative the midpoint of 
 
 ## Dataframe Specs
 
-{% include "docs_src/_templates/dataframe_specs.md" %}
+{% include "_docs_src/_templates/dataframe_specs.md" %}
 
 ## Pipeline Specs
 
-{% include "docs_src/_templates/pipeline_specs.md" %}
+{% include "_docs_src/_templates/pipeline_specs.md" %}

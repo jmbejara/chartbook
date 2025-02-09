@@ -23,6 +23,12 @@ A Python package for generating a centralized chart and analytics catalog, and m
 ```console
 pip install git+https://github.com/jmbejara/chartbook@main
 ```
+or add it to your requirements.txt file:
+
+```
+chartbook @ git+https://github.com/jmbejara/chartbook@main
+```
+
 
 
 ## Quick Start
