@@ -1,6 +1,6 @@
 {
     "COIN":{
-        "chartbase_format_version": "0.0.1",
+        "chartbook_format_version": "0.0.1",
         "pipeline_name": "Digital Assets and Stablecoins Pipeline",
         "pipeline_description": "This pipeline produces charts and dataframes related to digital assets. For now it only uses CoinMarketCap data.",
         "lead_pipeline_developer": "Jeremiah Bejarano",

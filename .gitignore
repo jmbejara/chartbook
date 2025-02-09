@@ -88,3 +88,6 @@ src/z_scratch_project_template.ipynb
 
 *Thumbs.db
 src/z_scratch_cb.ipynb
+
+# Ignore _docs_src directories anywhere in the repository
+**/_docs_src/

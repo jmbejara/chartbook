@@ -199,8 +199,8 @@ html_theme_options = {
 }
 
 
-html_logo = "../assets/logo.svg"
-html_favicon = "../assets/logo.svg"
+html_logo = "./assets/logo.png"
+html_favicon = "./assets/logo.png"
 html_title = "ChartBook"
 html_sourcelink_suffix = ""
 html_last_updated_fmt = "%c"  # to reveal the build date in the pages meta

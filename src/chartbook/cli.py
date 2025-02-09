@@ -14,7 +14,7 @@ def main():
 
 
 @main.command()
-@click.argument("output_dir", type=click.Path(), default="./_docs", required=False)
+@click.argument("output_dir", type=click.Path(), default="./docs", required=False)
 @click.option(
     "--project-dir", "-f", type=click.Path(), help="Path to project directory"
 )
@@ -26,7 +26,7 @@ def main():
 )
 @click.option(
     "--pipeline-theme",
-    default="chartbook",
+    default="pipeline",
     help="Theme to use for pipeline documentation",
 )
 @click.option(
@@ -38,11 +38,17 @@ def main():
 @click.option(
     "--docs-build-dir",
     type=click.Path(),
-    default="./_docs_build",
+    default="./_docs",
     help="Directory where documentation will be built",
 )
 @click.option(
-    "--keep-build-dir",
+    "--temp-docs-src-dir",
+    type=click.Path(),
+    default="./_docs_src",
+    help="Directory where documentation source files are temporarily stored in two stage procedure",
+)
+@click.option(
+    "--keep-build-dirs",
     is_flag=True,
     default=False,
     help="Keep temporary build directory after generation",
@@ -61,7 +67,8 @@ def generate(
     pipeline_theme,
     publish_dir,
     docs_build_dir,
-    keep_build_dir,
+    temp_docs_src_dir,
+    keep_build_dirs,
     overwrite,
 ):
     """Generate HTML documentation in the specified output directory."""
@@ -102,20 +109,17 @@ def generate(
         else:
             click.echo("Using default configuration.")
 
-    try:
-        generate_docs(
-            output_dir=output_dir,
-            project_dir=project_dir,
-            pipeline_dev_mode=pipeline_dev_mode,
-            pipeline_theme=pipeline_theme,
-            publish_dir=publish_dir,
-            docs_build_dir=docs_build_dir,
-            keep_build_dir=keep_build_dir,
-        )
-        click.echo(f"Successfully generated documentation in {output_dir}")
-    except Exception as e:
-        click.echo(f"Error generating documentation: {str(e)}", err=True)
-        raise click.Abort()
+    generate_docs(
+        output_dir=output_dir,
+        project_dir=project_dir,
+        pipeline_dev_mode=pipeline_dev_mode,
+        pipeline_theme=pipeline_theme,
+        publish_dir=publish_dir,
+        _docs_dir=docs_build_dir,
+        temp_docs_src_dir=temp_docs_src_dir,
+        keep_build_dirs=keep_build_dirs,
+    )
+    click.echo(f"Successfully generated documentation in {output_dir}")
 
 
 if __name__ == "__main__":

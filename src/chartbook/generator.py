@@ -1,22 +1,32 @@
-import subprocess
-from pathlib import Path
 import importlib.resources
 import shutil
+import subprocess
+from pathlib import Path
+
+from chartbook import pipeline_publish
+from chartbook.config import get_logo_path, load_config
+
+TEMP_DOCS_SRC_DIR = Path("_docs_src")
 
 
-def get_docs_src_path():
+def get_docs_src_path(pipeline_theme: str = "pipeline"):
     """Get the path to the docs_src directory included in the package."""
     package_path = importlib.resources.files("chartbook")
-    return Path(str(package_path)) / "docs_src"
+    if pipeline_theme == "pipeline":
+        return Path(str(package_path)) / "docs_src_pipeline"
+    elif pipeline_theme == "chartbook":
+        return Path(str(package_path)) / "docs_src_chartbook"
+    else:
+        raise ValueError(f"Invalid pipeline theme: {pipeline_theme}")
 
 
 def run_pipeline_publish(
-    docs_dir: Path,
     project_dir: Path,
     pipeline_dev_mode: bool = False,
     pipeline_theme: str = "chartbook",
     publish_dir: Path = Path("./_output/to_be_published/"),
-    docs_build_dir: Path = Path("./_docs"),
+    _docs_dir: Path = Path("./_docs"),
+    docs_src_dir: Path = TEMP_DOCS_SRC_DIR,
 ):
     """Run the pipeline publish script to generate markdown files.
 
@@ -26,22 +36,32 @@ def run_pipeline_publish(
         pipeline_dev_mode: Enable pipeline development mode
         pipeline_theme: Theme to use for pipeline documentation
         publish_dir: Directory where files will be published
-        docs_build_dir: Directory where documentation will be built
+        _docs_dir: Directory where documentation will be built
     """
-    from chartbook import pipeline_publish
+    project_dir = Path(project_dir).resolve()
+    publish_dir = Path(publish_dir).resolve()
+    _docs_dir = Path(_docs_dir).resolve()
+    docs_src_dir = Path(docs_src_dir).resolve()
 
     pipeline_publish.main(
-        docs_build_dir=docs_dir,
+        docs_build_dir=_docs_dir,
         base_dir=project_dir,
         pipeline_dev_mode=pipeline_dev_mode,
         pipeline_theme=pipeline_theme,
         publish_dir=publish_dir,
+        docs_src_dir=docs_src_dir,
     )
 
 
-def run_sphinx_build(docs_dir: Path):
+def run_sphinx_build(_docs_dir: Path):
     """Run sphinx-build to generate HTML files."""
-    build_cmd = ["sphinx-build", "-M", "html", str(docs_dir), str(docs_dir / "_build")]
+    build_cmd = [
+        "sphinx-build",
+        "-M",
+        "html",
+        str(_docs_dir),
+        str(_docs_dir / "_build"),
+    ]
 
     result = subprocess.run(build_cmd, capture_output=True, text=True)
     if result.returncode != 0:
@@ -54,91 +74,73 @@ def generate_docs(
     pipeline_dev_mode: bool = False,
     pipeline_theme: str = "chartbook",
     publish_dir: Path = Path("./_output/to_be_published/"),
-    docs_build_dir: Path = Path("./_docs"),
-    keep_build_dir: bool = False,
+    _docs_dir: Path = Path("./_docs"),
+    keep_build_dirs: bool = False,
+    temp_docs_src_dir: Path = TEMP_DOCS_SRC_DIR,
 ):
     """Generate documentation by running both pipeline publish and sphinx build.
-    
+
     Args:
         output_dir: Directory where output will be generated
         project_dir: Root directory of the project
         pipeline_dev_mode: Enable pipeline development mode
         pipeline_theme: Theme to use for pipeline documentation
         publish_dir: Directory where files will be published
-        docs_build_dir: Directory where documentation will be built
-        keep_build_dir: If True, keeps temporary build directory after generation
+        _docs_dir: Directory where documentation will be built
+        keep_build_dirs: If True, keeps temporary build directory after generation
     """
-    from chartbook.config import load_config, get_logo_path
-    from chartbook.generator import get_docs_src_path
-    
+
     output_dir = Path(output_dir).resolve()
     publish_dir = Path(publish_dir).resolve()
-    docs_build_dir = Path(docs_build_dir).resolve()
+    _docs_dir = Path(_docs_dir).resolve()
+    temp_docs_src_dir = Path(temp_docs_src_dir).resolve()
 
     # Load configuration
     config = load_config(project_dir)
 
     # Create temporary build directory
-    temp_dir = Path("_chart_book_temp")
-    temp_dir.mkdir(exist_ok=True)
+    temp_docs_src_dir.mkdir(exist_ok=True)
 
     try:
-        # Copy all docs_src files to temp directory
-        docs_src_path = get_docs_src_path()
-        for item in docs_src_path.glob("*"):
-            if item.is_file():
-                shutil.copy2(item, temp_dir)
-            elif item.is_dir():
-                shutil.copytree(item, temp_dir / item.name, dirs_exist_ok=True)
-
-        # Create necessary directories
-        static_dir = temp_dir / "_static"
-        static_dir.mkdir(exist_ok=True)
-        
-        assets_dir = temp_dir / "assets"
-        assets_dir.mkdir(exist_ok=True)
-
-        # Copy logo to both _static and assets directories
-        logo_path = get_logo_path(config, project_dir)
-        shutil.copy2(logo_path, static_dir / "logo.png")
-        shutil.copy2(logo_path, assets_dir / "logo.png")
-        
-        # Create index.rst if it doesn't exist
-        index_rst = temp_dir / "index.rst"
-        if not index_rst.exists():
-            index_rst.write_text("""
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   index
-   dataframes
-   charts
-   pipelines
-""")
+        # Select the correct docs_src directory based on the pipeline theme
+        if pipeline_theme == "pipeline":
+            _retrieve_correct_docs_src_dir(
+                temp_docs_src_dir, config, project_dir, pipeline_theme
+            )
+        elif pipeline_theme == "chartbook":
+            _retrieve_correct_docs_src_dir(
+                temp_docs_src_dir, config, project_dir, pipeline_theme
+            )
+        else:
+            raise ValueError(f"Invalid pipeline theme: {pipeline_theme}")
 
         # Run pipeline publish
         run_pipeline_publish(
-            docs_dir=temp_dir,
             project_dir=project_dir,
             pipeline_dev_mode=pipeline_dev_mode,
             pipeline_theme=pipeline_theme,
             publish_dir=publish_dir,
-            docs_build_dir=docs_build_dir,
+            _docs_dir=_docs_dir,
+            docs_src_dir=temp_docs_src_dir,
         )
 
         # Update conf.py
-        conf_path = temp_dir / "conf.py"
+        conf_path = temp_docs_src_dir / "conf.py"
         with open(conf_path, "r") as f:
             conf_content = f.read()
 
         # Update configuration values
+        sphinx_theme = {
+            "chartbook": "pydata_sphinx_theme",
+            "pipeline": "sphinx_book_theme",
+        }[pipeline_theme]
         replacements = {
             'project = "ChartBook"': f'project = "{config["site"]["title"]}"',
             'copyright = "2024, Jeremiah Bejarano"': f'copyright = "{config["site"]["copyright"]}, {config["site"]["author"]}"',
             'author = "Jeremiah Bejarano"': f'author = "{config["site"]["author"]}"',
             'html_logo = "../assets/logo.svg"': 'html_logo = "_static/logo.png"',
-            'html_favicon = "../assets/logo.svg"': 'html_favicon = "_static/logo.png"'
+            'html_favicon = "../assets/logo.svg"': 'html_favicon = "_static/logo.png"',
+            'html_theme = "pydata_sphinx_theme"': f'html_theme = "{sphinx_theme}"',
         }
 
         for old, new in replacements.items():
@@ -148,16 +150,42 @@ def generate_docs(
             f.write(conf_content)
 
         # Run sphinx build
-        run_sphinx_build(temp_dir)
+        run_sphinx_build(_docs_dir)
 
         # Copy build files to output
         output_dir.mkdir(parents=True, exist_ok=True)
-        html_build_dir = temp_dir / "_build" / "html"
+        html_build_dir = _docs_dir / "_build" / "html"
         if html_build_dir.exists():
             shutil.copytree(html_build_dir, output_dir, dirs_exist_ok=True)
     finally:
-        if not keep_build_dir:
+        if not keep_build_dirs:
             # Clean up temporary directory if keep_build_dir is False
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(_docs_dir, ignore_errors=True)
+            shutil.rmtree(temp_docs_src_dir, ignore_errors=True)
         else:
-            print(f"Keeping temporary build directory: {temp_dir.resolve()}")
+            print(f"Keeping temporary build directory: {_docs_dir.resolve()}")
+
+
+def _retrieve_correct_docs_src_dir(
+    temp_docs_src_dir: Path,
+    config: dict,
+    project_dir: Path,
+    pipeline_theme: str = "pipeline",
+):
+    """Copy documentation source files and setup directory structure."""
+    # Copy package docs_src contents
+    docs_src_path = get_docs_src_path(pipeline_theme)
+    for item in docs_src_path.glob("*"):
+        if item.is_file():
+            shutil.copy2(item, temp_docs_src_dir)
+        elif item.is_dir():
+            shutil.copytree(item, temp_docs_src_dir / item.name, dirs_exist_ok=True)
+
+    # Create required directories
+    (temp_docs_src_dir / "_static").mkdir(exist_ok=True)
+    (temp_docs_src_dir / "assets").mkdir(exist_ok=True)
+
+    # Copy logo to both directories
+    logo_path = get_logo_path(config, project_dir)
+    for dest_dir in ["_static", "assets"]:
+        shutil.copy2(logo_path, temp_docs_src_dir / dest_dir / "logo.png")

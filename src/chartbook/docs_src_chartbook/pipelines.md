@@ -6,6 +6,7 @@
 pipelines/{{pipeline_id}}_README.md
 {% endfor %}
 ```
+
 {% for pipeline_id, pipeline_specs in specs|dictsort %}
   {% set pipeline_page_link = "./pipelines/" ~ pipeline_id ~ "_README.md" %}
   {% set dot_or_dotdot = "." %}
@@ -14,7 +15,7 @@ pipelines/{{pipeline_id}}_README.md
 
 {{pipeline_specs.pipeline_description}}
 
-  {% include "docs_src/_templates/pipeline_specs.md" with context %}
-
+  {# Use passed docs_src_dir variable #}
+  {% include (docs_src_dir ~ "/_templates/pipeline_specs.md") with context %}
 
 {% endfor %}

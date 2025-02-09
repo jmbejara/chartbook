@@ -1,0 +1,8 @@
+[theme]
+logo_path = ""
+favicon_path = ""
+
+[site]
+title = "ExamplePipeline"
+author = "JBPipeline"
+copyright = "2025"
