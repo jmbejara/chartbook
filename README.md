@@ -12,31 +12,28 @@ A Python package for generating a centralized chart and analytics catalog, and m
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
-  - [Loading Factor Data](#loading-factor-data)
-  - [Factor Analysis Reports](#factor-analysis-reports)
-    - [Command Line Interface](#command-line-interface)
-    - [Python Library Usage](#python-library-usage)
-- [API Reference](#api-reference)
-- [Error Handling](#error-handling)
+- [Quick Start](#quick-start)
+- [Usage Guide](#usage-guide)
 - [License](#license)
 - [Development](#development)
+
 
 ## Installation
 
 ```console
-pip install chartbook
+pip install git+https://github.com/jmbejara/chartbook@main
 ```
+
 
 ## Quick Start
 
 ```console
-chartbook generate --pipeline-theme pipeline ./_docs
+chartbook generate 
 ```
 or
 
 ```console
-chartbook generate --pipeline-theme chartbook ./_docs
+chartbook generate --pipeline-theme chartbook
 ```
 
 ## Usage Guide
@@ -65,8 +62,8 @@ pip install hatch
 
 2. Clone the repository:
 ```console
-git clone https://github.com/jmbejara/chartbook-cli
-cd chartbook-cli
+git clone https://github.com/jmbejara/chartbook
+cd chartbook
 ```
 
 3. Create and activate a development environment:
@@ -76,7 +73,7 @@ hatch shell
 
 4. Run the included example pipeline:
 ```console
-chartbook generate --pipeline-theme chartbook ./_docs
+chartbook generate --pipeline-theme chartbook ./docs
 ```
 
 
@@ -127,31 +124,31 @@ hatch fmt --check  # for just checking formatting
 
 
 ```
-rm uv.lock && uv sync && uv run chartbook generate --pipeline-theme pipeline ./_docs   
-uv run --directory /Users/jbejarano/GitRepositories/chartbook/chartbook-cli chartbook generate --pipeline-theme pipeline ./_docs
+rm uv.lock && uv sync && uv run chartbook generate --pipeline-theme pipeline ./docs   
+uv run --directory /Users/jbejarano/GitRepositories/chartbook/chartbook chartbook generate --pipeline-theme pipeline ./docs
 
 ```
 ```
 pip uninstall chartbook
-pip install --force-reinstall git+https://github.com/jmbejara/chartbook-cli.git
-chartbook generate --pipeline-theme pipeline ./_docs
+pip install --force-reinstall git+https://github.com/jmbejara/chartbook.git
+chartbook generate --pipeline-theme pipeline ./docs
 ```
 or
 ```
-chartbook generate --pipeline-theme chartbook ./_docs
+chartbook generate --pipeline-theme chartbook ./docs
 ```
 
 ```
-uv pip install --force-reinstall git+https://github.com/jmbejara/chartbook-cli.git
-chartbook generate --pipeline-theme pipeline ./_docs
+uv pip install --force-reinstall git+https://github.com/jmbejara/chartbook.git
+chartbook generate --pipeline-theme pipeline ./docs
 
-uvx --from git+https://github.com/jmbejara/chartbook-cli chartbook generate --pipeline-theme pipeline ./_docs
+uvx --from git+https://github.com/jmbejara/chartbook chartbook generate --pipeline-theme pipeline ./docs
 ```
 or
 ```
-uv run chartbook generate --pipeline-theme pipeline ./_docs
+uv run chartbook generate --pipeline-theme pipeline ./docs
 ```
 
 ```
-ipython --pdb src/chartbook/cli.py -- generate --pipeline-theme chartbook ./_docs
+ipython --pdb src/chartbook/cli.py -- generate --pipeline-theme chartbook ./docs
 ```
