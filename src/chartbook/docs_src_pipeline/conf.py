@@ -147,6 +147,9 @@ html_js_files = [
 ]
 
 # -- Ablog options -----------------------------------------------------------
+html_css_files = [
+    "custom.css",
+]
 blog_path = "charts/index"
 blog_post_pattern = [
     # "notebooks/*.ipynb",

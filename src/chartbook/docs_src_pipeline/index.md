@@ -13,11 +13,18 @@ notebooks/02_example_with_dependencies.ipynb
 notebooks/03_public_repo_summary_charts.ipynb
 ```
 
+
+
 ```{toctree}
 :maxdepth: 1
 :caption: Pipeline Charts 📈
 charts.md
 ```
+
+```{postlist}
+:format: "{title}"
+```
+
 
 ```{toctree}
 :maxdepth: 1
@@ -40,11 +47,5 @@ apidocs/index
   {% include "docs_src/_templates/pipeline_specs.md" with context %}
 {% endfor %}
 
-
-## Module Documentation
-
-- {ref}`genindex`
-- {ref}`modindex`
-- {ref}`search`
 
 {{readme_text}}
