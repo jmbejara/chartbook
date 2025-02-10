@@ -20,7 +20,7 @@ def test_generate_command(tmp_path, monkeypatch):
 
     # Run the command
     runner = CliRunner()
-    result = runner.invoke(main, ["generate", "./docs", "--overwrite"])
+    result = runner.invoke(main, ["generate", "./docs", "--force-write"])
 
     # Debug output
     print("Command output:", result.output)

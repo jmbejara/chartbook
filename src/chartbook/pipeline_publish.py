@@ -552,10 +552,11 @@ def generate_chart_docs(
     # Load and wrap the template with top/bottom includes
     source = environment.loader.get_source(environment, path_to_chart_doc)[0]
     modified_source = (
-        '{% include "_docs_src/_templates/chart_entry_top.md" %}\n'
+        '{% include "_docs_src/_templates/chart_entry_top.md" %}\n\n'
         + source
-        + '\n{% include "_docs_src/_templates/chart_entry_bottom.md" %}'
+        + '\n\n{% include "_docs_src/_templates/chart_entry_bottom.md" %}'
     )
+
     template = environment.from_string(modified_source)
 
     if pipeline_theme == "pipeline":
