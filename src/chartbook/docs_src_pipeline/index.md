@@ -8,9 +8,7 @@ Last updated: {sub-ref}`today`
 ```{toctree}
 :maxdepth: 1
 :caption: Notebooks 📖
-notebooks/01_example_notebook_interactive.ipynb
-notebooks/02_example_with_dependencies.ipynb
-notebooks/03_public_repo_summary_charts.ipynb
+{{ notebook_list | join("\n")}}
 ```
 
 
@@ -37,7 +35,6 @@ charts.md
 :maxdepth: 1
 :caption: Appendix 💡
 myst_markdown_demos.md
-notebooks.md
 apidocs/index
 ```
 

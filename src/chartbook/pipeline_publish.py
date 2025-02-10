@@ -162,13 +162,17 @@ def get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_
     dataset_plan = {}
     chart_plan_download = {}
     chart_plan_static = {}
+    notebook_plan = {}
+
     download_chart_dir_download = Path(docs_build_dir) / "download_chart"
     download_chart_dir_static = Path(docs_build_dir) / "_static"
-
     download_dataframe_dir = Path(docs_build_dir) / "download_dataframe"
+    notebook_dir = Path(docs_build_dir) / "notebooks"
+
     download_chart_dir_download.mkdir(parents=True, exist_ok=True)
     download_dataframe_dir.mkdir(parents=True, exist_ok=True)
     download_chart_dir_static.mkdir(parents=True, exist_ok=True)
+    notebook_dir.mkdir(parents=True, exist_ok=True)
 
     for pipeline_id in pipeline_ids:
         pipeline_specs = specs[pipeline_id]
@@ -205,8 +209,15 @@ def get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_
             chart_plan_static[file_path] = (
                 download_chart_dir_static / f"{pipeline_id}_{chart_id}.html"
             )
+        for notebook_id in pipeline_specs["notebooks"]:
+            notebook_path = pipeline_base_dir / notebook_id
+            notebook_path = notebook_path.resolve()
+            notebook_name = notebook_path.name
+            notebook_plan[notebook_path] = (
+                notebook_dir / f"{pipeline_id}_{notebook_name}"
+            )
 
-    return dataset_plan, chart_plan_download, chart_plan_static
+    return dataset_plan, chart_plan_download, chart_plan_static, notebook_plan
 
 
 def copy_according_to_plan(publish_plan, mkdir=False):
@@ -371,6 +382,11 @@ def generate_all_pipeline_docs(
         # Remove the first two lines and join the rest
         readme_text = "".join(readme_content[2:])
 
+        notebook_list = [
+            f"notebooks/{pipeline_id}_{Path(notebook).name}"
+            for notebook in pipeline_specs["notebooks"]
+        ]
+
         # Render and copy index.md in pipeline themes
         template_path = "index.md"
         template = environment.get_template(template_path)
@@ -381,6 +397,8 @@ def generate_all_pipeline_docs(
             readme_text=readme_text,
             pipeline_page_link="./index.md",
             dot_or_dotdot=".",
+            pipeline_id=pipeline_id,
+            notebook_list=notebook_list,
         )
         file_path = docs_build_dir / "index.md"
         with open(file_path, mode="w", encoding="utf-8") as file:
@@ -745,10 +763,12 @@ def _demo():
     table_file_map = get_dataframes_and_dataframe_docs(base_dir=BASE_DIR)
 
     # Used for moving files into download folder. Dict shows where files will be copied from and to
-    dataset_plan, chart_plan_download, chart_plan_static = (
+    dataset_plan, chart_plan_download, chart_plan_static, notebook_plan = (
         get_sphinx_file_alignment_plan(base_dir=BASE_DIR, docs_build_dir=DOCS_BUILD_DIR)
     )
-    publish_plan = dataset_plan | chart_plan_download
+    publish_plan = (
+        dataset_plan | chart_plan_download | chart_plan_static | notebook_plan
+    )
     list(publish_plan.keys())
     list(publish_plan.values())
 
@@ -977,13 +997,14 @@ def main(
     ## Align files for use by Sphinx
     specs = read_specs(base_dir=base_dir)
 
-    dataset_plan, chart_plan_download, chart_plan_static = (
+    dataset_plan, chart_plan_download, chart_plan_static, notebook_plan = (
         get_sphinx_file_alignment_plan(base_dir=base_dir, docs_build_dir=docs_build_dir)
     )
 
     copy_according_to_plan(dataset_plan)
     copy_according_to_plan(chart_plan_download)
     copy_according_to_plan(chart_plan_static)
+    copy_according_to_plan(notebook_plan)
 
     generate_all_pipeline_docs(
         specs,
