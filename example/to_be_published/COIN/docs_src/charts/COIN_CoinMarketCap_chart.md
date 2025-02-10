@@ -1,4 +1,3 @@
-{% include "_docs_src/_templates/chart_entry_top.md" %}
 
 **Description:** Total market capitalization by digital asset category. 
 
@@ -14,5 +13,3 @@
 **What does this add that other charts might not?** Implied volatility provides important insights regarding investor expectations 
 
 
-
-{% include "_docs_src/_templates/chart_entry_bottom.md" %}
