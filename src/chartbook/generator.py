@@ -157,6 +157,8 @@ def generate_docs(
         html_build_dir = _docs_dir / "_build" / "html"
         if html_build_dir.exists():
             shutil.copytree(html_build_dir, output_dir, dirs_exist_ok=True)
+            # create empty file called .nojekyll for use with github pages
+            (output_dir / ".nojekyll").touch()
     finally:
         if not keep_build_dirs:
             # Clean up temporary directory if keep_build_dir is False
