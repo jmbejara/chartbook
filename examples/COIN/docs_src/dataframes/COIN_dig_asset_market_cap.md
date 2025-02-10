@@ -1,4 +1,3 @@
-# `{{pipeline_id}}_{{dataframe_id}}` - {{dataframe_name}}
 
 ## Description
 
@@ -15,10 +14,3 @@ Details on the data fields are below:
 - **Stablecoins**: Reports stablecoin market cap which includes the largest stablecoins, Tether and USDC. 
 - **Other**: Combined market cap of all other assets that do not fall into the other categories.
 
-## Dataframe Specs
-
-{% include "_docs_src/_templates/dataframe_specs.md" %}
-
-## Pipeline Specs
-
-{% include "_docs_src/_templates/pipeline_specs.md" %}

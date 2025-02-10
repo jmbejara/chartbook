@@ -1,0 +1,9 @@
+{
+    "EX":{
+        "import_from": "../EX"
+    },
+    "COIN":{
+        "import_from": "../COIN"
+    }
+
+}

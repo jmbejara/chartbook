@@ -6,7 +6,7 @@ import shutil
 def test_generate_command(tmp_path, monkeypatch):
     """Test generate command in example directory"""
     # Setup paths
-    example_dir = Path("example/to_be_published/EX")
+    example_dir = Path("examples/EX")
     output_dir = example_dir / "docs"
     
     # Clean previous runs

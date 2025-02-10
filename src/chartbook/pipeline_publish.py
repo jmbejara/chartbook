@@ -311,11 +311,14 @@ def generate_all_pipeline_docs(
     ## Dataframe and Pipeline List in index.md
     table_file_map = get_dataframes_and_dataframe_docs(base_dir=base_dir)
     dataframe_file_list = list(table_file_map.values())
-    environment = jinja2.Environment(loader=jinja2.FileSystemLoader([
-        base_dir,
-        docs_src_dir  # Add docs_src_dir to loader paths
-    ]))
-
+    environment = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(
+            [
+                base_dir,
+                docs_src_dir,  # Add docs_src_dir to loader paths
+            ]
+        )
+    )
 
     if pipeline_theme == "chartbook":
         # Render dataframe.md
@@ -336,7 +339,7 @@ def generate_all_pipeline_docs(
         rendered_page = template.render(
             specs=specs,
             dot_or_dotdot="..",
-            docs_src_dir=docs_src_dir.relative_to(base_dir)  # Pass relative path
+            docs_src_dir=docs_src_dir.relative_to(base_dir),  # Pass relative path
         )
         # Copy to build directory
         file_path = docs_build_dir / "pipelines.md"
@@ -449,7 +452,25 @@ def generate_dataframe_docs(
 
     path_to_dataframe_doc = Path(dataframe_specs["path_to_dataframe_doc"]).as_posix()
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(pipeline_base_dir))
-    template = environment.get_template(path_to_dataframe_doc)
+    # Load and wrap the template with top/bottom includes
+    source = environment.loader.get_source(environment, path_to_dataframe_doc)[0]
+    modified_source = (
+        """# `{{pipeline_id}}_{{dataframe_id}}` - {{dataframe_name}}\n\n"""
+        + source
+        + """\n\n
+## Dataframe Specs
+
+{% include "_docs_src/_templates/dataframe_specs.md" %}
+
+## Pipeline Specs
+
+{% include "_docs_src/_templates/pipeline_specs.md" %}
+
+"""
+    )
+
+    template = environment.from_string(modified_source)
+
     # The name of the date column in the parquet file (default: "date").
     date_col = dataframe_specs["date_col"]
 
@@ -548,7 +569,7 @@ def generate_chart_docs(
 
     path_to_chart_doc = Path(chart_specs["path_to_chart_doc"]).as_posix()
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(pipeline_base_dir))
-    
+
     # Load and wrap the template with top/bottom includes
     source = environment.loader.get_source(environment, path_to_chart_doc)[0]
     modified_source = (
@@ -971,7 +992,6 @@ def main(
         docs_src_dir=docs_src_dir,
         base_dir=base_dir,
     )
-
 
     # Copy remaining docs_src files to build directory
     copy_docs_src_to_build(docs_src_dir, docs_build_dir)
