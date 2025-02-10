@@ -54,8 +54,8 @@ def main():
     help="Keep temporary build directory after generation",
 )
 @click.option(
-    "--overwrite",
-    "-w",
+    "--force-write",
+    "-f",
     is_flag=True,
     default=False,
     help="Overwrite existing output directory by deleting it first",
@@ -69,7 +69,7 @@ def generate(
     docs_build_dir,
     temp_docs_src_dir,
     keep_build_dirs,
-    overwrite,
+    force_write,
 ):
     """Generate HTML documentation in the specified output directory."""
 
@@ -82,15 +82,15 @@ def generate(
             "Output directory cannot be the current directory '.' to prevent accidental project deletion"
         )
 
-    # If the output directory exists, delete it if the --overwrite flag is provided
+    # If the output directory exists, delete it if the --force-write flag is provided
     if output_dir.exists():
-        if overwrite:
+        if force_write:
             shutil.rmtree(output_dir)
         else:
             if any(output_dir.iterdir()):
                 raise click.UsageError(
                     f"Output directory '{output_dir}' already exists and is not empty. "
-                    "Please delete it manually or use the --overwrite flag to remove it."
+                    "Please delete it manually or use the --force-write flag to remove it."
                 )
 
     # If project_dir not provided, use current directory

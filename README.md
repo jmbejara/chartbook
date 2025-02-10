@@ -34,12 +34,12 @@ chartbook @ git+https://github.com/jmbejara/chartbook@main
 ## Quick Start
 
 ```console
-chartbook generate 
+chartbook generate -f
 ```
 or
 
 ```console
-chartbook generate --pipeline-theme chartbook
+chartbook generate -f --pipeline-theme chartbook
 ```
 
 ## Usage Guide
@@ -79,7 +79,7 @@ hatch shell
 
 4. Run the included example pipeline:
 ```console
-chartbook generate --pipeline-theme chartbook ./docs
+chartbook generate -f --pipeline-theme chartbook ./docs
 ```
 
 
